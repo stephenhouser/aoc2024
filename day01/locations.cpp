@@ -1,4 +1,5 @@
 #include <iostream>
+#include <iomanip>
 #include <fstream>
 #include <sstream>
 #include <iterator>
@@ -14,8 +15,10 @@
 #include <algorithm>
 #include <map>
 #include <array>
+#include <chrono>
 
-bool verbose = false;
+// verbosity level, 0 = nothing extra, 1 = more...
+int verbose = 0;
 
 std::vector<std::string> split(const std::string &str, const std::string &delim) {
     std::vector<std::string> tokens;
@@ -83,7 +86,7 @@ std::vector<std::string> read_lines(const std::string &path) {
 
 
 
-std::tuple<std::vector<long>, std::vector<long>> read_data(std::string &path) {
+std::tuple<std::vector<long>, std::vector<long>> read_data(const std::string &path) {
     auto lines { read_lines(path) };
     std::vector<long> left;
     std::vector<long> right;
@@ -99,7 +102,7 @@ std::tuple<std::vector<long>, std::vector<long>> read_data(std::string &path) {
     return {left, right};
 }
 
-int part1(std::string& path) {
+int part1(const std::string& path) {
     auto [left, right] = read_data(path);
     auto locations { zip(left, right) };
     long distance  { 0 };
@@ -111,7 +114,7 @@ int part1(std::string& path) {
     return (int)distance;
 }
 
-int part2(std::string& path) {
+int part2(const std::string& path) {
     auto [left, right] = read_data(path);
     std::map<long, long> matches;
     long similarity { 0 };
@@ -128,26 +131,30 @@ int part2(std::string& path) {
  }
 
 void help(std::string_view program) {
-    std::cout << program << "[-hv12] <file...>" << "\n";
+    std::cout << program << "[-hv1:2:] <file...>" << "\n";
+    std::cout << "\t-1\trun part 1" << "\n";
+    std::cout << "\t-2\trun part 2" << "\n";
     std::cout << "\t-h\thelp" << "\n";
     std::cout << "\t-v\tverbose" << "\n";
 }
 
 int main(int argc, char **argv) {
     char *program_name = argv[0];
-    unsigned int part = 0x00;
+    int p1_answer = 0;
+    int p2_answer = 0;
+    int exit_code = 0;
 
     int c;
-    while ((c = getopt(argc, argv, "hv12")) != -1) {
+    while ((c = getopt(argc, argv, "hv1:2:")) != -1) {
         switch (c) {
             case 'v': 
-                verbose = true;
+                verbose++;
                 break;
             case '1':
-                part |= 0x01;
+                p1_answer = atoi(optarg);
                 break;
             case '2':
-                part |= 0x02;
+                p2_answer = atoi(optarg);
                 break;
             default:
                 help(program_name);
@@ -158,46 +165,52 @@ int main(int argc, char **argv) {
     argc -= optind; 
     argv += optind; 
 
-    if (!part) {
-        part = 0x03;
-    }
-
     if (!argc) {
-        std::cerr << "Error: No file specified.\n";
+        std::cerr << "Error: No file specified." << std::endl;
         help(program_name);
+        return EXIT_FAILURE;;
     }
 
     for (int arg = 0; arg < argc; arg++) {
         std::string path{argv[arg]};
         if (verbose) {
-            std::cout << path << "\t";
+            std::cout << std::setw(10) << std::left << path << "\t";
         }
 
-        try {
-
-            if (part & 0x01) {
-                int p1 = part1(path);
-                if (verbose) {
-                    std::cout << "p1=";
-                }
-
-                std::cout << p1;
+        try {            
+            if (verbose) {
+                std::cout << "p1=";
             }
 
-            if (part == 0x03) {
-                std::cout << "\t";
+            int p1 = part1(path);           
+
+            if (p1_answer > 0) {
+                exit_code += (p1_answer == p1) ? 0 : 1;
+
+                const char *success = (p1_answer == p1) ? "√ " : "! ";
+                std::cout << success;
+            }
+            std::cout << std::setw(10) << std::left << p1;
+
+
+            std::cout << "\t";
+
+            if (verbose) {
+                std::cout << "p2=";
             }
 
-            if (part & 0x02) {
-                int p2 = part2(path);
-                if (verbose) {
-                    std::cout << "p2=";
-                }
+            int p2 = part2(path);
 
-                std::cout << p2;
+            if (p2_answer > 0) {
+                exit_code += (p2_answer == p2) ? 0 : 2;
+
+                const char *success = (p2_answer == p2) ? "√ " : "! ";
+                std::cout << success;
             }
 
+            std::cout << std::setw(10) << std::left << p2;
             std::cout << std::endl;
+
         } catch(std::exception const& e) {
             std::cerr << "Exception: " << e.what() << "\n";
             //throw;
@@ -207,5 +220,5 @@ int main(int argc, char **argv) {
         }
     }
 
-    return 0;   
+    return exit_code;
 }
