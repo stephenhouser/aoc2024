@@ -12,10 +12,12 @@
 #include <tuple>
 #include <cstring>
 #include <algorithm>
+#include <map>
 
 bool verbose = false;
 
 using string_vector = std::vector<std::string>;
+using ulong = unsigned long;
 
 // std::string read_file(std::string_view path) {
 //     std::ios::sync_with_stdio(false);
@@ -47,11 +49,11 @@ std::vector<std::string> split(std::string str, std::string delim) {
     return tokens;
 }
 
-std::vector<std::tuple<int, int>> zip(std::vector<int> a, std::vector<int> b) {
-    std::vector<std::tuple<int, int>> zipped;
+std::vector<std::tuple<long, long>> zip(std::vector<long> left, std::vector<long> right) {
+    std::vector<std::tuple<long, long>> zipped;
 
-    for (unsigned int i = 0; i < a.size(); i++) {
-        zipped.push_back({a[i], b[i]});
+    for (std::size_t i = 0; i < left.size(); i++) {
+        zipped.push_back({left[i], right[i]});
     }
 
     return zipped;
@@ -73,41 +75,46 @@ string_vector read_lines(std::string const path) {
     return lines;
 }
 
-std::tuple<std::vector<int>, std::vector<int>>
-read_data(std::string path) {
+std::tuple<std::vector<long>, std::vector<long>> read_data(std::string path) {
     auto lines = read_lines(path);
 
-    std::vector<int> locations1;
-    std::vector<int> locations2;
+    std::vector<long> left;
+    std::vector<long> right;
 
     for (const auto& line : lines) {
         auto locations = split(line, " ");
-        locations1.push_back(std::atoi(locations[0].c_str()));
-        locations2.push_back( std::atoi(locations[1].c_str()));
-
-        // std::cout << std::atoi(locations[0].c_str()) << ":" << 
-        //         std::atoi(locations[1].c_str()) << "\n";
+        left.push_back(std::atol(locations[0].c_str()));
+        right.push_back( std::atol(locations[1].c_str()));
         }
 
-    std::sort(locations1.begin(), locations1.end(), std::less<>());
-    std::sort(locations2.begin(), locations2.end(), std::less<>());
-
-    return {locations1, locations2};
+    std::sort(left.begin(), left.end(), std::less<>());
+    std::sort(right.begin(), right.end(), std::less<>());
+    return {left, right};
 }
 
-// int part2(std::vector<int> elves) {
-//     //return std::reduce(elves.begin(), elves.begin() + 3, 0);
-// }
+int part2(std::vector<long> left, std::vector<long> right) {
+    std::map<long, long> matches;
 
-int part1(std::vector<int> locations1, std::vector<int> locations2) {
-    auto locations{ zip(locations1, locations2) };
+    long similarity { 0 };
+    for (const auto key : left) {
+        if (!matches.contains(key)) {
+            matches[key] = std::count(right.begin(), right.end(), key);
+        }
+        similarity += key * matches[key];
+    }
+     //return std::reduce(elves.begin(), elves.begin() + 3, 0);
+     return (int)similarity;
+ }
 
-    int distance = 0;
+int part1(std::vector<long> left, std::vector<long> right) {
+    auto locations{ zip(left, right) };
+
+    long distance = 0;
     for (const auto &[a, b] : locations) {
-        distance += abs(a - b);
+        distance += b - a;
     }
 
-    return distance;
+    return (int)distance;
 }
 
 void help(std::string_view program) {
@@ -142,10 +149,12 @@ int main(int argc, char **argv) {
         std::string path{argv[arg]};
 
         try {
-            auto [l1, l2] = read_data(path);
-            int p1 = part1(l1, l2);
+            auto [left, right] = read_data(path);
+            int p1 = part1(left, right);
             std::cout << "Part 1: Sum of Distances : " << p1 << std::endl;
 
+            int p2 = part2(left, right);
+            std::cout << "Part 2: Similarity Score : " << p2 << std::endl;
 
         } catch(std::exception const& e) {
             std::cerr << "Exception: " << e.what() << "\n";
