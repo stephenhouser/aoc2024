@@ -31,7 +31,7 @@ LFLAGS =
 
 # C++ specific flags
 CXX = g++
-CXXFLAGS = -std=c++20
+CXXFLAGS = -std=c++17
 LXXFLAGS =
 
 .PHONY: default all clean distclean
