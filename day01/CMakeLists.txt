@@ -1,0 +1,14 @@
+INVALID SO I DONT USE AND KILL MY MAKEFILE
+
+cmake_minimum_required(VERSION 3.15)
+
+project(day01)
+
+add_executable(locations locations.cpp)
+
+enable_testing()
+add_test(NAME SAMPLE
+	COMMAND locations test.txt)
+add_test(NAME LIVE 
+	COMMAND locations input.txt)
+#add_subdirectory(tests)
