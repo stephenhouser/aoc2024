@@ -22,7 +22,7 @@ OBJECTS = $(patsubst %.cpp, %.o, $(wildcard *.cpp)) \
 endif
 
 # C Preprocessor flags (for c and c++ code)
-CPPFLAGS = -g -Wall -Weffc++ -Wextra -Wconversion -Wsign-conversion -Werror
+CPPFLAGS = -g -Wall -Weffc++ -Wextra -Wconversion -Wsign-conversion -Werror -Wpedantic
 
 # C specific flags
 CC = gcc
@@ -56,8 +56,8 @@ $(TARGET): $(OBJECTS)
 	$(CXX) $(LXXFLAGS) $^ $(LIBS) -o $@
 
 test: $(TARGET)
-	@./$(TARGET) test.txt
-	@./$(TARGET) input.txt
+	@./$(TARGET) -v12 test.txt
+	@./$(TARGET) -v12 input.txt
 
 clean:
 	-rm -f *.o

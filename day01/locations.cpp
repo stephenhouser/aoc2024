@@ -28,7 +28,7 @@ std::vector<std::string> split(const std::string &str, const std::string &delim)
         token = strtok(NULL, delim.c_str()); 
     }
 
-    delete[] str_c;
+    free(str_c);
     return tokens;
 }
 
@@ -99,21 +99,8 @@ std::tuple<std::vector<long>, std::vector<long>> read_data(std::string &path) {
     return {left, right};
 }
 
-int part2(std::vector<long> left, std::vector<long> right) {
-    std::map<long, long> matches;
-    long similarity { 0 };
-
-    for (const auto key : left) {
-        // C++20 has matches.contains(key), C++17 does not.
-        if (matches.find(key) == matches.end()) {
-            matches[key] = std::count(right.begin(), right.end(), key);
-        }
-        similarity += key * matches[key];
-    }
-     return (int)similarity;
- }
-
-int part1(std::vector<long> left, std::vector<long> right) {
+int part1(std::string& path) {
+    auto [left, right] = read_data(path);
     auto locations { zip(left, right) };
     long distance  { 0 };
 
@@ -124,28 +111,56 @@ int part1(std::vector<long> left, std::vector<long> right) {
     return (int)distance;
 }
 
+int part2(std::string& path) {
+    auto [left, right] = read_data(path);
+    std::map<long, long> matches;
+    long similarity { 0 };
+
+    for (const auto key : left) {
+        // C++20 has matches.contains(key), C++17 does not.
+        if (matches.find(key) == matches.end()) {
+            matches[key] = std::count(right.begin(), right.end(), key);
+        }
+        similarity += key * matches[key];
+    }
+
+    return (int)similarity;
+ }
+
 void help(std::string_view program) {
-    std::cout << program << "[-hv] <file...>" << "\n";
+    std::cout << program << "[-hv12] <file...>" << "\n";
     std::cout << "\t-h\thelp" << "\n";
     std::cout << "\t-v\tverbose" << "\n";
 }
 
 int main(int argc, char **argv) {
     char *program_name = argv[0];
+    unsigned int part = 0x00;
 
     int c;
-    while ((c = getopt(argc, argv, "hv")) != -1) {
+    while ((c = getopt(argc, argv, "hv12")) != -1) {
         switch (c) {
             case 'v': 
                 verbose = true;
+                break;
+            case '1':
+                part |= 0x01;
+                break;
+            case '2':
+                part |= 0x02;
                 break;
             default:
                 help(program_name);
                 return 0;
         }
     }
+
     argc -= optind; 
     argv += optind; 
+
+    if (!part) {
+        part = 0x03;
+    }
 
     if (!argc) {
         std::cerr << "Error: No file specified.\n";
@@ -154,21 +169,41 @@ int main(int argc, char **argv) {
 
     for (int arg = 0; arg < argc; arg++) {
         std::string path{argv[arg]};
+        if (verbose) {
+            std::cout << path << "\t";
+        }
 
         try {
-            auto [left, right] = read_data(path);
-            int p1 = part1(left, right);
-            std::cout << "Part 1: Sum of Distances : " << p1 << std::endl;
 
-            int p2 = part2(left, right);
-            std::cout << "Part 2: Similarity Score : " << p2 << std::endl;
+            if (part & 0x01) {
+                int p1 = part1(path);
+                if (verbose) {
+                    std::cout << "p1=";
+                }
 
+                std::cout << p1;
+            }
+
+            if (part == 0x03) {
+                std::cout << "\t";
+            }
+
+            if (part & 0x02) {
+                int p2 = part2(path);
+                if (verbose) {
+                    std::cout << "p2=";
+                }
+
+                std::cout << p2;
+            }
+
+            std::cout << std::endl;
         } catch(std::exception const& e) {
             std::cerr << "Exception: " << e.what() << "\n";
-            throw;
+            //throw;
         } catch(...) {
             std::cerr << "Exception: Unknown\n";
-            throw;
+            //throw;
         }
     }
 
