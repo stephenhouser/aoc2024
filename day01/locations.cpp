@@ -130,6 +130,38 @@ int part2(const std::string& path) {
     return (int)similarity;
  }
 
+int part_wrapper(int part_n, int solution, const std::string &path) {
+    int failure = 0;
+    if (solution >= 0) { // 0 <= solutioin, run the code...
+        if (verbose) {
+            std::cout << "p" << part_n << "=";
+        }
+
+        auto start = std::chrono::high_resolution_clock::now();
+        int answer = part_n == 1 ? part1(path) : part2(path);
+        auto finish = std::chrono::high_resolution_clock::now();
+
+        if (0 < solution) { // 0 < solution, check the answer
+            failure = (answer == solution) ? 0 : 1;
+
+            if (verbose) {
+                const char *success = (failure == 0) ? "√ " : "! ";
+                std::cout << success;
+            }
+        }
+
+        std::cout << std::setw(10) << std::left << answer;
+
+        if (verbose) {
+            /* Getting number of milliseconds as a double. */
+            std::chrono::duration<double, std::milli> ms_double = finish - start;
+            std::cout << " (" << ms_double.count() << "ms)";
+        }
+    }
+
+    return failure;
+}
+
 void help(std::string_view program) {
     std::cout << program << "[-hv1:2:] <file...>" << "\n";
     std::cout << "\t-1\trun part 1" << "\n";
@@ -177,40 +209,11 @@ int main(int argc, char **argv) {
             std::cout << std::setw(10) << std::left << path << "\t";
         }
 
-        try {            
-            if (verbose) {
-                std::cout << "p1=";
-            }
-
-            int p1 = part1(path);           
-
-            if (p1_answer > 0) {
-                exit_code += (p1_answer == p1) ? 0 : 1;
-
-                const char *success = (p1_answer == p1) ? "√ " : "! ";
-                std::cout << success;
-            }
-            std::cout << std::setw(10) << std::left << p1;
-
-
+        try {
+            exit_code += part_wrapper(1, p1_answer, path);
             std::cout << "\t";
-
-            if (verbose) {
-                std::cout << "p2=";
-            }
-
-            int p2 = part2(path);
-
-            if (p2_answer > 0) {
-                exit_code += (p2_answer == p2) ? 0 : 2;
-
-                const char *success = (p2_answer == p2) ? "√ " : "! ";
-                std::cout << success;
-            }
-
-            std::cout << std::setw(10) << std::left << p2;
+            exit_code += part_wrapper(2, p2_answer, path);
             std::cout << std::endl;
-
         } catch(std::exception const& e) {
             std::cerr << "Exception: " << e.what() << "\n";
             //throw;
