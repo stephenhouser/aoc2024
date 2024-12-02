@@ -1,7 +1,7 @@
 
 extern int verbose;
-extern int part1(std::vector<std::vector<long>> reports);
-extern int part2(std::vector<std::vector<long>> reports);
+extern int part1(std::vector<std::vector<data_t>> reports);
+extern int part2(std::vector<std::vector<data_t>> reports);
 
 std::vector<std::string> split(const std::string &str, const std::string &delim) {
     std::vector<std::string> tokens;

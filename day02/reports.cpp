@@ -17,7 +17,8 @@
 #include <array>
 #include <chrono>
 
-std::vector<std::vector<long>> read_data(const std::string &path);
+using data_t = int;
+std::vector<std::vector<data_t>> read_data(const std::string &path);
 
 #include "aoc2024.h"
 
@@ -29,16 +30,16 @@ const int max_safe_distance = 3;
 int verbose = 0;
 
 /* Read data from path and return a vector for each line in the file. */
-std::vector<std::vector<long>> read_data(const std::string &path) {
-    auto lines { read_lines(path) };
-    std::vector<std::vector<long>> reports;
+std::vector<std::vector<data_t>> read_data(const std::string &path) {
+    auto lines = read_lines(path);
+    std::vector<std::vector<data_t>> reports;
 
     for (const auto& line : lines) {
-	    std::vector<long> levels;
+	    std::vector<data_t> levels;
 
 		/* split numbers by spaces */
         for (auto level : split(line, " ")) {
-			levels.push_back(atol(level.c_str()));
+			levels.push_back(atoi(level.c_str()));
 		}
 
 		reports.push_back(levels);
@@ -51,9 +52,9 @@ std::vector<std::vector<long>> read_data(const std::string &path) {
  *  - true generally increasing numbers
  *  - false generally decreasing numbers 
  */
-bool is_increasing(const std::vector<long> &report) {
-	int direction { 0 };
-	long previous { report.front() };
+bool is_increasing(const std::vector<data_t> &report) {
+	int direction = 0;
+	data_t previous = report.front();
 
 	for (auto level : report) {
 		direction += level - previous;
@@ -63,7 +64,7 @@ bool is_increasing(const std::vector<long> &report) {
 }
 
 /* Return if the absolute difference is a safe change. */
-bool safe_distance(long last_level, long level) {
+bool safe_distance(data_t last_level, data_t level) {
 	auto difference = abs(level - last_level);
  	return min_safe_distance <= difference && difference <= max_safe_distance;
 }
@@ -71,7 +72,7 @@ bool safe_distance(long last_level, long level) {
 /* Return if the change from last_level to level is safe.
  * Takes into account if we are on an increasing or decreasing path.
  */
-bool safe_change(long last_level, long level, bool increasing) {
+bool safe_change(data_t last_level, data_t level, bool increasing) {
 	auto difference = level - last_level;
 	if (!safe_distance(last_level, level)) {
 		return false;
@@ -81,7 +82,7 @@ bool safe_change(long last_level, long level, bool increasing) {
 }
 
 /* Show the report highlighting where a failure was identified. */
-void show_report(const std::vector<long> &report, bool increasing, std::size_t fail_index) {
+void show_report(const std::vector<data_t> &report, bool increasing, std::size_t fail_index) {
 	const char *inc = increasing ? "+" : "-";
 	std::cout << inc;
 
@@ -105,13 +106,13 @@ void show_report(const std::vector<long> &report, bool increasing, std::size_t f
  * - return the index of where there was an unsafe change
  * - return the size of the report if all changes were safe (report.size())
  */
-std::size_t safe_level(const std::vector<long> &report) {
-	long last_level = report[0];
+std::size_t safe_level(const std::vector<data_t> &report) {
+	data_t last_level = report[0];
 	bool increasing = is_increasing(report);
 	std::size_t index;
 
 	for (index = 1; index < report.size(); index++) {
-		long level = report[index];
+		data_t level = report[index];
 
 		if (!safe_change(last_level, level, increasing)) {
 			break;
@@ -123,8 +124,8 @@ std::size_t safe_level(const std::vector<long> &report) {
 	return index;
 }
 
-int part1(const std::vector<std::vector<long>> reports) {
-    long safe_reports  { 0 };
+int part1(const std::vector<std::vector<data_t>> reports) {
+    int safe_reports = 0 ;
 
 	if (verbose > 1) {
 		std::cout << "\n";
@@ -144,7 +145,7 @@ int part1(const std::vector<std::vector<long>> reports) {
 		}
     }
 
-    return (int)safe_reports;
+    return safe_reports;
 }
 
 /* A little less brute-force solution for part 2. is it still O(n^2)?
@@ -153,7 +154,7 @@ int part1(const std::vector<std::vector<long>> reports) {
  * - Then work backwards removing each element from the vector and see if it works
  * - 3976 (slow below) vs 2103 (fast here) comparisons on the input.txt
  */
-int part2(const std::vector<std::vector<long>> reports) {
+int part2(const std::vector<std::vector<data_t>> reports) {
     int safe_reports = 0;
 
 	if (verbose > 1) {
@@ -200,7 +201,7 @@ int part2(const std::vector<std::vector<long>> reports) {
  * - For each report it starts from index 0 and removes each element and tries 
  * 		the list again.
  */
-int part2_slow(const std::vector<std::vector<long>> reports) {
+int part2_slow(const std::vector<std::vector<data_t>> reports) {
     int safe_reports = 0;
 
 	if (verbose > 1) {
