@@ -17,8 +17,8 @@ Contains my solutions to the [Advent of Code 2024](https://adventofcode.com/2024
 
 ## Problems and Solutions
 
-- [Day 1: ](https://adventofcode.com/2024/day/1) -- [solution](./day-01)
-- [Day 2: ](https://adventofcode.com/2024/day/2) -- [solution](./day-02)
+- [Day 1: ](https://adventofcode.com/2024/day/1) -- [solution](./day01)
+- [Day 2: ](https://adventofcode.com/2024/day/2) -- [solution](./day02)
 
 ## NOTES
 
