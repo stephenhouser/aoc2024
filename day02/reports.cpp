@@ -17,13 +17,18 @@
 #include <array>
 #include <chrono>
 
+std::vector<std::vector<long>> read_data(const std::string &path);
+
 #include "aoc2024.h"
 
-const int safe_level_change = 3;
+/* Maximum difference between two values to be a "safe" level change. */
+const int min_safe_distance = 1;
+const int max_safe_distance = 3;
 
-// verbosity level, 0 = nothing extra, 1 = more...
+/* Output verbosity level; 0 = nothing extra, 1 = more... Set by command line. */
 int verbose = 0;
 
+/* Read data from path and return a vector for each line in the file. */
 std::vector<std::vector<long>> read_data(const std::string &path) {
     auto lines { read_lines(path) };
     std::vector<std::vector<long>> reports;
@@ -31,6 +36,7 @@ std::vector<std::vector<long>> read_data(const std::string &path) {
     for (const auto& line : lines) {
 	    std::vector<long> levels;
 
+		/* split numbers by spaces */
         for (auto level : split(line, " ")) {
 			levels.push_back(atol(level.c_str()));
 		}
@@ -41,46 +47,42 @@ std::vector<std::vector<long>> read_data(const std::string &path) {
     return reports;
 }
 
+/* Returns if the numbers in the vector are increasing.
+ *  - true generally increasing numbers
+ *  - false generally decreasing numbers 
+ */
 bool is_increasing(const std::vector<long> &report) {
-	// auto first = report.front();
-	// auto it = report.begin();
-	// while(it != report.end() && *it == first) {
-    // 	it++;
-	// }
+	int direction { 0 };
+	long previous { report.front() };
 
-	// return first < *it;
-	long destiny = 0;
-	long last_level = report[0];
 	for (auto level : report) {
-		destiny += level - last_level;
+		direction += level - previous;
 	}
 
-	return destiny > 0;
+	return direction > 0;
 }
 
+/* Return if the absolute difference is a safe change. */
+bool safe_distance(long last_level, long level) {
+	auto difference = abs(level - last_level);
+ 	return min_safe_distance <= difference && difference <= max_safe_distance;
+}
+
+/* Return if the change from last_level to level is safe.
+ * Takes into account if we are on an increasing or decreasing path.
+ */
 bool safe_change(long last_level, long level, bool increasing) {
 	auto difference = level - last_level;
-	if (!difference) {
+	if (!safe_distance(last_level, level)) {
 		return false;
 	}
 
-	if (increasing && (difference < 0 || difference > safe_level_change)) {
-		return false;
-	}
-
-	if (!increasing && (difference > 0 || difference < -safe_level_change)) {
-		return false;
-	}
-
-	return true;
+	return increasing ? difference > 0 : difference < 0;
 }
 
-// bool safe_distance(long last_level, long level, bool safe_distance) {
-// 	return abs(level - last_level) <= safe_distance;
-// }
-
+/* Show the report highlighting where a failure was identified. */
 void show_report(const std::vector<long> &report, bool increasing, std::size_t fail_index) {
-	const char *inc = increasing ? "+ " : "- ";
+	const char *inc = increasing ? "+" : "-";
 	std::cout << inc;
 
 	for (std::size_t i = 0; i < report.size(); i++) {
@@ -99,7 +101,10 @@ void show_report(const std::vector<long> &report, bool increasing, std::size_t f
 	}
 }
 
-// returns the offset we failed on
+/* Check a report to see if it is safe.
+ * - return the index of where there was an unsafe change
+ * - return the size of the report if all changes were safe (report.size())
+ */
 std::size_t safe_level(const std::vector<long> &report) {
 	long last_level = report[0];
 	bool increasing = is_increasing(report);
@@ -107,28 +112,33 @@ std::size_t safe_level(const std::vector<long> &report) {
 
 	for (index = 1; index < report.size(); index++) {
 		long level = report[index];
-		bool safe = safe_change(last_level, level, increasing);
 
-		if (!safe) {
+		if (!safe_change(last_level, level, increasing)) {
 			break;
 		}
 
 		last_level = level;
 	}
 
-	if (verbose > 1) {
-		show_report(report, increasing, index);
-	}
-
 	return index;
 }
 
-int part1(const std::string& path) {
-    auto reports = read_data(path);
+int part1(const std::vector<std::vector<long>> reports) {
     long safe_reports  { 0 };
 
-    for (const auto &report : reports) {
+	if (verbose > 1) {
+		std::cout << "\n";
+	}
+
+	for (std::size_t i = 0; i < reports.size(); i++) {
+		auto &report = reports[i];
 		auto fail_index = safe_level(report);
+
+		if (verbose > 1) {
+			std::cout << std::right << std::setfill('0') << std::setw(4) << i;
+			show_report(report, is_increasing(report), fail_index);
+		}
+
 		if (fail_index == report.size()) {
 			safe_reports++;
 		}
@@ -137,38 +147,104 @@ int part1(const std::string& path) {
     return (int)safe_reports;
 }
 
-// 554 too low
-// 565 too low
-// 566 is right answer
-// 578 too high
-int part2(const std::string& path) {
-    auto reports = read_data(path);
-    int safe_reports  { 0 };
+/* A little less brute-force solution for part 2. is it still O(n^2)?
+ * - It runs relatively fast as the dataset is small.
+ * - For each report it starts from the index where a problem occurs
+ * - Then work backwards removing each element from the vector and see if it works
+ * - 3976 (slow below) vs 2103 (fast here) comparisons on the input.txt
+ */
+int part2(const std::vector<std::vector<long>> reports) {
+    int safe_reports = 0;
 
-    for (const auto &report : reports) {
-		if (verbose > 1) {		
-			std::cout << "- SIZE:\t\t" << report.size() << " ";
-		}
+	if (verbose > 1) {
+		std::cout << "\n";
+	}
+
+	for (std::size_t i = 0; i < reports.size(); i++) {
+		auto &report = reports[i];
 		auto fail_index = safe_level(report);
+
+		if (verbose > 1) {
+			std::cout << std::right << std::setw(4) << i;
+			show_report(report, is_increasing(report), fail_index);
+		}
+
 		if (fail_index == report.size()) {
 			safe_reports++;
 			continue;
 		}
 
-		for (std::size_t i = 0; i < report.size(); i++) {
-			auto try_again = report;
-			try_again.erase(std::next(try_again.begin(), (long)i));
-			if (verbose > 1) {		
-				std::cout << "  " << i << " SIZE:\t" << try_again.size() << " ";
+		for (int j = (int)fail_index; j >= 0; j--) {
+			auto damp_report = report;
+			damp_report.erase(std::next(damp_report.begin(), (long)j));
+			auto fail_index = safe_level(damp_report);
+
+			if (verbose > 2) {
+				std::cout << "    ";
+				show_report(damp_report, is_increasing(damp_report), fail_index);
 			}
 
-			if (safe_level(try_again) == try_again.size()) {
+			if (fail_index == damp_report.size()) {
 				safe_reports++;
 				break;
 			}
 		}
-
     }
 
+	std::cout << std::setfill(' '); 
     return safe_reports;
  }
+
+/* This is my original brute-force solution for part 2. is it O(n^2)?
+ * - It runs relatively fast as the dataset is small.
+ * - For each report it starts from index 0 and removes each element and tries 
+ * 		the list again.
+ */
+int part2_slow(const std::vector<std::vector<long>> reports) {
+    int safe_reports = 0;
+
+	if (verbose > 1) {
+		std::cout << "\n";
+	}
+
+	for (std::size_t i = 0; i < reports.size(); i++) {
+		auto &report = reports[i];
+
+		auto fail_index = safe_level(report);
+
+		if (verbose > 1) {
+			std::cout << std::right << std::setfill('0') << std::setw(4) << i;
+			show_report(report, is_increasing(report), fail_index);
+		}
+
+		if (fail_index == report.size()) {
+			safe_reports++;
+			continue;
+		}
+
+		for (std::size_t j = 0; j < report.size(); j++) {
+			auto damp_report = report;
+			damp_report.erase(std::next(damp_report.begin(), (long)j));
+			auto fail_index = safe_level(damp_report);
+
+			if (verbose > 2) {
+				std::cout << "    ";
+				show_report(damp_report, is_increasing(damp_report), fail_index);
+			}
+
+			if (fail_index == damp_report.size()) {
+				safe_reports++;
+				break;
+			}
+		}
+    }
+
+	std::cout << std::setfill(' '); 
+	return safe_reports;
+}
+
+// 554 too low
+// 565 too low
+// 566 is right answer
+// 578 too high
+

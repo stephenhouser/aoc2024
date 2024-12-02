@@ -1,7 +1,7 @@
 
 extern int verbose;
-int part1(const std::string& path);
-int part2(const std::string& path);
+extern int part1(std::vector<std::vector<long>> reports);
+extern int part2(std::vector<std::vector<long>> reports);
 
 std::vector<std::string> split(const std::string &str, const std::string &delim) {
     std::vector<std::string> tokens;
@@ -74,8 +74,10 @@ int part_wrapper(int part_n, int solution, const std::string &path) {
             std::cout << "p" << part_n << "=";
         }
 
+        auto data = read_data(path);
+
         auto start = std::chrono::high_resolution_clock::now();
-        int answer = part_n == 1 ? part1(path) : part2(path);
+        int answer = part_n == 1 ? part1(data) : part2(data);
         auto finish = std::chrono::high_resolution_clock::now();
 
         if (0 < solution) { // 0 < solution, check the answer
