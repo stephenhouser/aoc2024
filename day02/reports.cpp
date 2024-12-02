@@ -42,13 +42,20 @@ std::vector<std::vector<long>> read_data(const std::string &path) {
 }
 
 bool is_increasing(const std::vector<long> &report) {
-	auto first = report.front();
-	auto it = report.begin();
-	while(it != report.end() && *it == first) {
-    	it++;
+	// auto first = report.front();
+	// auto it = report.begin();
+	// while(it != report.end() && *it == first) {
+    // 	it++;
+	// }
+
+	// return first < *it;
+	long destiny = 0;
+	long last_level = report[0];
+	for (auto level : report) {
+		destiny += level - last_level;
 	}
 
-	return first < *it;
+	return destiny > 0;
 }
 
 bool safe_change(long last_level, long level, bool increasing) {
@@ -68,39 +75,52 @@ bool safe_change(long last_level, long level, bool increasing) {
 	return true;
 }
 
-bool safe_level(const std::vector<long> &report) {
-	auto last_level = 0l;
-	bool increasing = is_increasing(report);
+// bool safe_distance(long last_level, long level, bool safe_distance) {
+// 	return abs(level - last_level) <= safe_distance;
+// }
 
-	for (auto level : report) {
-		if (!last_level) {
-			if (verbose > 1) {
-				const char *inc = increasing ? "+ " : "- ";
-				std::cout << inc << level;
-			}
+void show_report(const std::vector<long> &report, bool increasing, std::size_t fail_index) {
+	const char *inc = increasing ? "+ " : "- ";
+	std::cout << inc;
 
-			last_level = level;
+	for (std::size_t i = 0; i < report.size(); i++) {
+		auto level = report[i];
+		if (i == fail_index) {
+			std::cout << " \033[91;1;4m" << level << "\033[0m";
 		} else {
-			if (verbose > 1) {
-				std::cout << " " << level;
-			}
+			std::cout << " " << level;
+		}
+	}
 
-			if (!safe_change(last_level, level, increasing)) {
-				if (verbose > 1) {
-					std::cout << "\t\033[91;1;4mFAIL\033[0m\n";
-				}
-				return false;
-			}
+	if (fail_index < report.size()) {
+		std::cout << "\t\033[91;1;4mFAIL\033[0m\n";
+	} else {
+		std::cout << "\t\033[92;1;4m√\033[0m\n";
+	}
+}
+
+// returns the offset we failed on
+std::size_t safe_level(const std::vector<long> &report) {
+	long last_level = report[0];
+	bool increasing = is_increasing(report);
+	std::size_t index;
+
+	for (index = 1; index < report.size(); index++) {
+		long level = report[index];
+		bool safe = safe_change(last_level, level, increasing);
+
+		if (!safe) {
+			break;
 		}
 
 		last_level = level;
 	}
 
 	if (verbose > 1) {
-		std::cout << "\t\033[92;1;4m√\033[0m\n";
+		show_report(report, increasing, index);
 	}
-	
-	return true;
+
+	return index;
 }
 
 int part1(const std::string& path) {
@@ -108,7 +128,8 @@ int part1(const std::string& path) {
     long safe_reports  { 0 };
 
     for (const auto &report : reports) {
-		if (safe_level(report)) {
+		auto fail_index = safe_level(report);
+		if (fail_index == report.size()) {
 			safe_reports++;
 		}
     }
@@ -116,9 +137,38 @@ int part1(const std::string& path) {
     return (int)safe_reports;
 }
 
+// 554 too low
+// 565 too low
+// 566 is right answer
+// 578 too high
 int part2(const std::string& path) {
     auto reports = read_data(path);
-    long safe_reports  { 0 };
+    int safe_reports  { 0 };
 
-    return (int)safe_reports;
+    for (const auto &report : reports) {
+		if (verbose > 1) {		
+			std::cout << "- SIZE:\t\t" << report.size() << " ";
+		}
+		auto fail_index = safe_level(report);
+		if (fail_index == report.size()) {
+			safe_reports++;
+			continue;
+		}
+
+		for (std::size_t i = 0; i < report.size(); i++) {
+			auto try_again = report;
+			try_again.erase(std::next(try_again.begin(), (long)i));
+			if (verbose > 1) {		
+				std::cout << "  " << i << " SIZE:\t" << try_again.size() << " ";
+			}
+
+			if (safe_level(try_again) == try_again.size()) {
+				safe_reports++;
+				break;
+			}
+		}
+
+    }
+
+    return safe_reports;
  }

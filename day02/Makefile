@@ -56,8 +56,8 @@ $(TARGET): $(OBJECTS)
 	$(CXX) $(LXXFLAGS) $^ $(LIBS) -o $@
 
 test: $(TARGET)
-	@-./$(TARGET) -v -1 2 -2 0 test.txt
-	@-./$(TARGET) -v -1 526 -2 0 input.txt
+	@-./$(TARGET) -v -1 2 -2 4 test.txt
+	@-./$(TARGET) -v -1 526 -2 566 input.txt
 
 clean:
 	-rm -f *.o
