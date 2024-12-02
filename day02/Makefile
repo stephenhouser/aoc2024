@@ -4,7 +4,7 @@
 #
 # 2017-02-10/Stephen Houser
 #
-TARGET = locations
+TARGET = reports
 HEADERS =
 SOURCES = $(TARGET).cpp
 
@@ -56,8 +56,8 @@ $(TARGET): $(OBJECTS)
 	$(CXX) $(LXXFLAGS) $^ $(LIBS) -o $@
 
 test: $(TARGET)
-	@-./$(TARGET) -v -1 0 -2 0 test.txt
-	@-./$(TARGET) -v -1 0 -2 0 input.txt
+	@-./$(TARGET) -v -1 2 -2 0 test.txt
+	@-./$(TARGET) -v -1 526 -2 0 input.txt
 
 clean:
 	-rm -f *.o
