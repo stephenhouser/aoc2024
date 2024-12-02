@@ -155,7 +155,10 @@ int part_wrapper(int part_n, int solution, const std::string &path) {
         if (verbose) {
             /* Getting number of milliseconds as a double. */
             std::chrono::duration<double, std::milli> ms_double = finish - start;
-            std::cout << " (" << ms_double.count() << "ms)";
+            std::cout << " (" 
+                      << std::setw(10) << std::fixed << std::right << std::setprecision(6)
+                      << ms_double.count() << "ms)";
+
         }
     }
 
@@ -211,8 +214,13 @@ int main(int argc, char **argv) {
 
         try {
             exit_code += part_wrapper(1, p1_answer, path);
-            std::cout << "\t";
+
+            if (p1_answer >= 0 && p2_answer >= 0) {
+                std::cout << "\t";
+            }
+
             exit_code += part_wrapper(2, p2_answer, path);
+
             std::cout << std::endl;
         } catch(std::exception const& e) {
             std::cerr << "Exception: " << e.what() << "\n";
