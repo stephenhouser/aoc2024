@@ -5,16 +5,22 @@ Contains my solutions to the [Advent of Code 2024](https://adventofcode.com/2024
 
 ## Tools
 
-- Python (no additional libraries)
+- C++ 17 (only standard libraries)
 - Visual Studio Code
 - macOS / Linux
 - git / GitHub
 
 ## Leaderboards
 
+- [Stephen's Leaderboard](https://adventofcode.com/2023/leaderboard/private/view/1942246) (code: 1942246-ccb5e106)
+- [Anthony's / Bowdoin IT Leaderboard](https://adventofcode.com/2023/leaderboard/private/view/2619876)
 
 ## Problems and Solutions
 
+- [Day 1: ](https://adventofcode.com/2024/day/1) -- [solution](./day-01)
+- [Day 2: ](https://adventofcode.com/2024/day/2) -- [solution](./day-02)
+
+## NOTES
 
 Options
     - default, runs part 1 and part 2 and does not check answers, just prints them
@@ -30,3 +36,4 @@ Options
 ./dayXX input.txt           # runs part 1 and part 2 and prints answers (no check)
 ./dayXX -1 12 input.txt     # runs part 1 and part 2 prints answers and checks part 1 result
 ./dayXX -2 -1 input.txt     # disables part 2 from running
+```
