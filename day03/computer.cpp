@@ -43,13 +43,11 @@ int part1(const std::vector<data_t> data) {
 		auto m_end = std::sregex_iterator();
 		for (std::regex_iterator i = m_beg; i != m_end; ++i) {
 			std::smatch match = *i;
-			std::string instruction = match.str();
 
 			int l = atoi(match[1].str().c_str());
 			int r = atoi(match[2].str().c_str());
 
 			accumulator += l * r;
-			// std::cout << instruction << "\n";
 		}
 	}
 
@@ -59,7 +57,33 @@ int part1(const std::vector<data_t> data) {
 int part2([[maybe_unused]] const std::vector<data_t> data) {
     int accumulator = 0 ;
 
+	bool enabled = true;
+	for (auto line : data) {
+		std::regex mul_regex(
+			"mul\\((\\d+),(\\d+)\\)|do\\(\\)|don't\\(\\)"
+		);
+		auto m_beg = std::sregex_iterator(line.begin(), line.end(), mul_regex);
+		auto m_end = std::sregex_iterator();
+		for (std::regex_iterator i = m_beg; i != m_end; ++i) {
+			std::smatch match = *i;
+			std::string instruction = match.str();
+
+			if (instruction.find("mul(", 0) == 0 && enabled) {
+				int l = atoi(match[1].str().c_str());
+				int r = atoi(match[2].str().c_str());
+				accumulator += l * r;
+			}
+
+			if (instruction.find("do(", 0) == 0) {
+				enabled = true;
+			}
+
+			if (instruction.find("don't(", 0) == 0) {
+				enabled = false;
+			}
+		}
+	}
+
     return accumulator;
-;
  }
 
