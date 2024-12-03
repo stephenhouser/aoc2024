@@ -55,9 +55,17 @@ all: default
 $(TARGET): $(OBJECTS)
 	$(CXX) $(LXXFLAGS) $^ $(LIBS) -o $@
 
+
+lint-setup: $(SOURCES)
+	clang-tidy $(SOURCES) --
+
+lint: lint-setup
+	clang-tidy $(SOURCES) -checks=-*,clang-analyzer-*,-clang-analyzer-cplusplus*
+
 test: $(TARGET)
-	@-./$(TARGET) -v -1 2 -2 4 test.txt
-	@-./$(TARGET) -v -1 526 -2 566 input.txt
+	@-./$(TARGET) -v -1 161 -2 -1 test-1.txt
+	@-./$(TARGET) -v -1 -1 -2 48 test-2.txt
+	@-./$(TARGET) -v -1 173517243 -2 100450138 input.txt
 
 clean:
 	-rm -f *.o

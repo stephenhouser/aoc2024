@@ -17,8 +17,9 @@ Contains my solutions to the [Advent of Code 2024](https://adventofcode.com/2024
 
 ## Problems and Solutions
 
-- [Day 1: ](https://adventofcode.com/2024/day/1) -- [solution](./day01)
-- [Day 2: ](https://adventofcode.com/2024/day/2) -- [solution](./day02)
+- [Day 1: Historian Hysteria](https://adventofcode.com/2024/day/1) -- [solution](./day01)
+- [Day 2: Red-Nosed Reports](https://adventofcode.com/2024/day/2) -- [solution](./day02)
+- [Day 3: Mull It Over](https://adventofcode.com/2024/day3) -- [solution](./day03)
 
 ## NOTES
 

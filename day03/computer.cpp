@@ -1,22 +1,23 @@
-#include <iostream>
-#include <iomanip>
-#include <fstream>
-#include <sstream>
-#include <iterator>
-#include <stdexcept>
-#include <vector>
-#include <string>    
-#include <ranges>
-#include <string_view>
 #include <getopt.h>
-#include <charconv>
-#include <tuple>
-#include <cstring>
+
 #include <algorithm>
-#include <map>
 #include <array>
+#include <charconv>
 #include <chrono>
+#include <cstring>
+#include <fstream>
+#include <iomanip>
+#include <iostream>
+#include <iterator>
+#include <map>
+#include <ranges>
 #include <regex>
+#include <sstream>
+#include <stdexcept>
+#include <string>
+#include <string_view>
+#include <tuple>
+#include <vector>
 
 using data_t = std::string;
 std::vector<data_t> read_data(const std::string &path);
@@ -28,14 +29,13 @@ int verbose = 0;
 
 /* Read data from path and return a vector for each line in the file. */
 std::vector<data_t> read_data(const std::string &path) {
-    auto lines = read_lines(path);
+	auto lines = read_lines(path);
 
-    return lines;
+	return lines;
 }
 
-
 int part1(const std::vector<data_t> data) {
-    int accumulator = 0 ;
+	int accumulator = 0;
 
 	for (auto line : data) {
 		std::regex mul_regex("mul\\((\\d+),(\\d+)\\)");
@@ -51,17 +51,16 @@ int part1(const std::vector<data_t> data) {
 		}
 	}
 
-    return accumulator;
+	return accumulator;
 }
 
 int part2([[maybe_unused]] const std::vector<data_t> data) {
-    int accumulator = 0 ;
+	int accumulator = 0;
 
 	bool enabled = true;
 	for (auto line : data) {
 		std::regex mul_regex(
-			"mul\\((\\d+),(\\d+)\\)|do\\(\\)|don't\\(\\)"
-		);
+			"mul\\((\\d+),(\\d+)\\)|do\\(\\)|don't\\(\\)");
 		auto m_beg = std::sregex_iterator(line.begin(), line.end(), mul_regex);
 		auto m_end = std::sregex_iterator();
 		for (std::regex_iterator i = m_beg; i != m_end; ++i) {
@@ -84,6 +83,5 @@ int part2([[maybe_unused]] const std::vector<data_t> data) {
 		}
 	}
 
-    return accumulator;
- }
-
+	return accumulator;
+}
