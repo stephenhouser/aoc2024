@@ -13,7 +13,7 @@
 /* Output verbosity level; 0 = nothing extra, 1 = more... Set by command line. */
 int verbose = 0;
 
-std::vector<std::string> split(const std::string &str, const std::string &delim) {
+const std::vector<std::string> split(const std::string &str, const std::string &delim) {
     std::vector<std::string> tokens;
     char *str_c { strdup(str.c_str()) };
     char *token { NULL };
@@ -29,7 +29,7 @@ std::vector<std::string> split(const std::string &str, const std::string &delim)
 }
 
 // from https://insanecoding.blogspot.com/2011/11/how-to-read-in-file-in-c.html
-std::string read_file(const std::string &filename) {
+const std::string read_file(const std::string &filename) {
     // get file size to read entire file in one go.
     std::ifstream in(filename, std::ios::in | std::ios::binary);
     if (in)     {
@@ -50,7 +50,7 @@ std::string read_file(const std::string &filename) {
     throw(errno);
 }
 
-std::vector<std::string> read_lines(const std::string &path) {
+const std::vector<std::string> read_lines(const std::string &path) {
     std::vector<std::string> lines;
 
     std::ifstream ifs(path);
