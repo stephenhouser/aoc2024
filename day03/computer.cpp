@@ -1,31 +1,12 @@
-#include <getopt.h>
 
-#include <algorithm>
-#include <array>
-#include <charconv>
-#include <chrono>
-#include <cstring>
-#include <fstream>
-#include <iomanip>
-#include <iostream>
-#include <iterator>
-#include <map>
-#include <ranges>
-#include <regex>
-#include <sstream>
-#include <stdexcept>
-#include <string>
-#include <string_view>
-#include <tuple>
-#include <vector>
-
-using data_t = std::string;
-std::vector<data_t> read_data(const std::string &path);
+#include <iostream>		// cout
+#include <iomanip>		// setw and setprecision on output
+#include <string>		// std::string
+#include <vector>		// std::vector
+#include <regex>		// std::regex regular expressions
 
 #include "aoc2024.h"
-
-/* Output verbosity level; 0 = nothing extra, 1 = more... Set by command line. */
-int verbose = 0;
+#include "computer.h"
 
 /* Read data from path and return a vector for each line in the file. */
 std::vector<data_t> read_data(const std::string &path) {
@@ -34,8 +15,8 @@ std::vector<data_t> read_data(const std::string &path) {
 	return lines;
 }
 
-int part1(const std::vector<data_t> data) {
-	int accumulator = 0;
+long part1(const std::vector<data_t> data) {
+	long accumulator = 0;
 
 	for (auto line : data) {
 		std::regex mul_regex("mul\\((\\d+),(\\d+)\\)");
@@ -44,8 +25,8 @@ int part1(const std::vector<data_t> data) {
 		for (std::regex_iterator i = m_beg; i != m_end; ++i) {
 			std::smatch match = *i;
 
-			int l = atoi(match[1].str().c_str());
-			int r = atoi(match[2].str().c_str());
+			int l = stoi(match[1].str());
+			int r = stoi(match[2].str());
 
 			accumulator += l * r;
 		}
@@ -54,8 +35,8 @@ int part1(const std::vector<data_t> data) {
 	return accumulator;
 }
 
-int part2([[maybe_unused]] const std::vector<data_t> data) {
-	int accumulator = 0;
+long part2([[maybe_unused]] const std::vector<data_t> data) {
+	long accumulator = 0;
 
 	bool enabled = true;
 	for (auto line : data) {
@@ -68,8 +49,8 @@ int part2([[maybe_unused]] const std::vector<data_t> data) {
 			std::string instruction = match.str();
 
 			if (instruction.find("mul(", 0) == 0 && enabled) {
-				int l = atoi(match[1].str().c_str());
-				int r = atoi(match[2].str().c_str());
+				int l = stoi(match[1].str());
+				int r = stoi(match[2].str());
 				accumulator += l * r;
 			}
 

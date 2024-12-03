@@ -1,0 +1,7 @@
+[
+	{
+	  "directory": "/tmp",
+	  "command": "gcc div0.c",
+	  "file": "computer.cpp"
+	}
+]

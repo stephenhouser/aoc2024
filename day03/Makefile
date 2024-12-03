@@ -6,7 +6,7 @@
 #
 TARGET = computer
 HEADERS =
-SOURCES = $(TARGET).cpp
+#SOURCES = $(TARGET).cpp
 
 # Gnu make specific!
 ifdef $(SOURCES)
@@ -16,6 +16,7 @@ CXX_SOURCES = $(filter %.cpp,$(SOURCES))
 OBJECTS = $(C_SOURCES:.c=.o) $(CXX_SOURCES:.cpp=.o)
 else
 # Include all .c files in current directory
+SOURCES = $(wildcard *.cpp)
 HEADERS = $(wildcard *.h)
 OBJECTS = $(patsubst %.cpp, %.o, $(wildcard *.cpp)) \
 			$(patsubst %.c, %.o, $(wildcard *.c))
@@ -37,7 +38,14 @@ LXXFLAGS =
 .PHONY: default all clean distclean
 
 default: $(TARGET)
+
 all: default
+
+
+info:
+	@echo SOURCES= $(SOURCES)
+	@echo HEADERS= $(HEADERS)
+	@echo OBJECTS= $(OBJECTS)
 
 # default rule for compiling c code
 #%.o: %.c $(HEADERS)
@@ -55,12 +63,8 @@ all: default
 $(TARGET): $(OBJECTS)
 	$(CXX) $(LXXFLAGS) $^ $(LIBS) -o $@
 
-
-lint-setup: $(SOURCES)
-	clang-tidy $(SOURCES) --
-
-lint: lint-setup
-	clang-tidy $(SOURCES) -checks=-*,clang-analyzer-*,-clang-analyzer-cplusplus*
+lint: $(SOURCES)
+	clang-tidy $(SOURCES)
 
 test: $(TARGET)
 	@-./$(TARGET) -v -1 161 -2 -1 test-1.txt
