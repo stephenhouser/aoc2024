@@ -1,7 +1,7 @@
-
+.PHONY: all clean
 
 all:
-	@cd day01; make distclean; make test
-	@cd day02; make distclean; make test
-	@cd day03; make distclean; make test
-	@cd day04; make distclean; make test
+	for n in day*; do (cd $$n; make test); done
+
+clean:
+	for n in day*; do (cd $$n; make distclean); done
