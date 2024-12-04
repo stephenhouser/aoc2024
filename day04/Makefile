@@ -68,8 +68,8 @@ lint: $(SOURCES)
 	clang-tidy $(SOURCES)
 
 test: $(TARGET)
-	@-./$(TARGET) -v -1 18 -2 2534 test.txt
-	@-./$(TARGET) -v -1 2534 -2 0 input.txt
+	@-./$(TARGET) -v -1   18 -2    9 test.txt
+	@-./$(TARGET) -v -1 2534 -2 1866 input.txt
 
 clean:
 	-rm -f *.o
