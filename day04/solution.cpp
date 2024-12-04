@@ -8,24 +8,21 @@
 #include "aoc2024.h"
 #include "solution.h"
 
-
-bool is_valid(const data_collection_t &data, int x, int y) {
-	return 0 <= x && x < (int)data[0].size() && 0 <= y && y < (int)data.size();
-}
-
-bool is_letter(const data_collection_t &data, const int x, const int y, const char c) {
-	return is_valid(data, x, y) && (data[y][x] == c);
+bool is_letter(const data_collection_t &data, int x, int y, char c) {
+	return 0 <= x && x < (int)data[0].size() && 
+	       0 <= y && y < (int)data.size() &&
+		   data[(std::size_t)y][(std::size_t)x] == c;
 }
 
 bool is_xmas(const data_collection_t &data, int x, int y, int dx, int dy) {
-	// M A S
-	return  is_letter(data, x+dx, y+dy, 'M') &&
+	return  is_letter(data, x+(  dx), y+(  dy), 'M') &&
 	    	is_letter(data, x+(2*dx), y+(2*dy), 'A') &&
 			is_letter(data, x+(3*dx), y+(3*dy), 'S');
 }
 
 int xmas_count(const data_collection_t &data, int x, int y) {
 	int xmas_count = 0;
+
 	for (int dy = -1; dy <= 1; dy++) {
 		for (int dx = -1; dx <= 1; dx++) {
 			if (!(dx == 0 && dy == 0)) {
@@ -40,12 +37,12 @@ int xmas_count(const data_collection_t &data, int x, int y) {
 long part1([[maybe_unused]]const data_collection_t data) {
 	long solution = 0;
 
-	int x_max = data[0].size();
-	int y_max = data.size();
+	int x_max = (int)data[0].size();
+	int y_max = (int)data.size();
 
 	for (int y = 0; y < y_max; y++) {
 		for (int x = 0; x < x_max; x++) {
-			if (data[y][x] == 'X') {
+			if (is_letter(data, x, y, 'X')) {
 				solution += xmas_count(data, x, y);
 			}
 		}
@@ -64,12 +61,14 @@ bool is_x_mas(const data_collection_t &data, int x, int y) {
 long part2([[maybe_unused]] const data_collection_t data) {
 	long solution = 0;
 
-	int x_max = data[0].size();
-	int y_max = data.size();
+	int x_max = (int)data[0].size();
+	int y_max = (int)data.size();
 
-	for (int y = 0; y < y_max; y++) {
-		for (int x = 0; x < x_max; x++) {
-			if (data[y][x] == 'A') {
+	// don't need to check first and last rows and columns
+	// start at 1 end at size() - 1
+	for (int y = 1; y < y_max - 1; y++) {
+		for (int x = 1; x < x_max - 1; x++) {
+			if (is_letter(data, x, y, 'A')) {
 				solution += is_x_mas(data, x, y) ? 1 : 0;
 			}
 		}
