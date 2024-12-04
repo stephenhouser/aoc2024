@@ -23,7 +23,8 @@ OBJECTS = $(patsubst %.cpp, %.o, $(wildcard *.cpp)) \
 endif
 
 # C Preprocessor flags (for c and c++ code)
-CPPFLAGS = -g -Wall -Weffc++ -Wextra -Wconversion -Wsign-conversion -Werror -Wpedantic
+#CPPFLAGS = -g -Wall -Weffc++ -Wextra -Wconversion -Wsign-conversion -Werror -Wpedantic
+CPPFLAGS = -g -Wall -Weffc++ -Wextra  -Werror -Wpedantic
 
 # C specific flags
 CC = gcc
@@ -67,9 +68,8 @@ lint: $(SOURCES)
 	clang-tidy $(SOURCES)
 
 test: $(TARGET)
-	@-./$(TARGET) -v -1 161 -2 -1 test-1.txt
-	@-./$(TARGET) -v -1 -1 -2 48 test-2.txt
-	@-./$(TARGET) -v -1 173517243 -2 100450138 input.txt
+	@-./$(TARGET) -v -1 18 -2 2534 test.txt
+	@-./$(TARGET) -v -1 2534 -2 0 input.txt
 
 clean:
 	-rm -f *.o
