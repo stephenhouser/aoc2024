@@ -24,7 +24,8 @@ OBJECTS = $(patsubst %.cpp, %.o, $(wildcard *.cpp)) \
 endif
 
 # C Preprocessor flags (for c and c++ code)
-CPPFLAGS = -g -Wall -Weffc++ -Wextra -Wconversion -Wsign-conversion -Werror -Wpedantic -Wno-unused-parameter -Wno-unused-variable -Wno-effc++
+CPPFLAGS = -g -Wall -Weffc++ -Wextra -Wconversion -Wsign-conversion -Werror -Wpedantic  -Wno-effc++
+#-Wno-unused-parameter -Wno-unused-variable -Wno-effc++
 
 # C specific flags
 CC = gcc
@@ -33,8 +34,11 @@ LFLAGS =
 
 # C++ specific flags
 CXX = g++
-CXXFLAGS = -std=c++17 -pg
-LXXFLAGS = -pg
+# for profiling
+# CXXFLAGS = -std=c++17 -pg
+# LXXFLAGS = -pg
+CXXFLAGS = -std=c++17 -O3
+LXXFLAGS =
 
 .PHONY: default all clean distclean
 
