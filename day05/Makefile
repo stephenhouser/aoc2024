@@ -24,7 +24,7 @@ OBJECTS = $(patsubst %.cpp, %.o, $(wildcard *.cpp)) \
 endif
 
 # C Preprocessor flags (for c and c++ code)
-CPPFLAGS = -g -Wall -Weffc++ -Wextra -Wconversion -Wsign-conversion -Werror -Wpedantic -Wno-unused-parameter -Wno-unused-variable
+CPPFLAGS = -g -Wall -Weffc++ -Wextra -Wconversion -Wsign-conversion -Werror -Wpedantic -Wno-unused-parameter -Wno-unused-variable -Wno-effc++
 
 # C specific flags
 CC = gcc
@@ -33,8 +33,8 @@ LFLAGS =
 
 # C++ specific flags
 CXX = g++
-CXXFLAGS = -std=c++17 -O3
-LXXFLAGS =
+CXXFLAGS = -std=c++17 -pg
+LXXFLAGS = -pg
 
 .PHONY: default all clean distclean
 
@@ -67,15 +67,11 @@ $(TARGET): $(OBJECTS)
 lint: $(SOURCES)
 	clang-tidy $(SOURCES)
 
-test: test1 test2
-
-test1: $(TARGET)
+test: $(TARGET)
 	@-/bin/echo -n "$(DAY) "
-	@-./$(TARGET) -v -s 143 -g 42 test.txt
-
-test2: $(TARGET)
+	@-./$(TARGET) -v -s 143 -g 123 test.txt
 	@-/bin/echo -n "$(DAY) "
-	@-./$(TARGET) -v -s 5713 -g 42 input.txt
+	@-./$(TARGET) -v -s 5713 -g 5180 input.txt
 
 clean:
 	-rm -f *.o

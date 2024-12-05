@@ -21,34 +21,56 @@ void print_vec(const std::vector<int> &vec) {
 }
 
 
-// check_rule(page, prev, next, rules) {
-// 	after_rules = rules[page]->after	// page comes after these
-// 	before_rules = rules[page]->before	// page mist be before these
-
-// 	// if set intersection is empty
-// 	// after_rules and list of things we already saw
-// 	for (p : after_rules) {
-// 		if p in prev:
-// 			return false;
-// 	}
-
-// 	for (p : before_rules) {
-// 		if p in next
-// 			return false;
-// 	}
-
-// 	return true
-// }
+bool set_contains(const std::set<int> &s, int n) {
+	return s.find(n) != s.end();
+}
 
 bool vec_contains(const std::vector<int> &vec, int n) {
-	for (auto x : vec) {
-		if (x == n) {
+	if (false) {
+		for (auto x : vec) {
+			if (x == n) {
+				return true;
+			}
+		}
+
+		return false;
+	} else {
+		for (unsigned long i = 0; i < vec.size(); i++) {
+			if (vec[i] == n) {
+				return true;
+			}
+		}
+		return false;
+	}
+}
+
+long vec_middle(std::vector<int> const &vec) {
+	return *(vec.begin() + ((int)vec.size() / 2));
+}
+
+
+
+bool appears_before(int n, size_t loc, const std::vector<int> &vec) {
+	for (auto [i, x] : enumerate(vec)) {
+		if (i < loc && n == x) {
+			return true;
+		}
+
+	}
+
+	return false;
+}
+
+bool appears_after(int n, size_t loc, const std::vector<int> &vec) {
+	for (auto [i, x] : enumerate(vec)) {
+		if (i >= loc && n == x) {
 			return true;
 		}
 	}
 
 	return false;
 }
+
 
 bool check_rule(int page, const std::vector<int> &prev, const std::vector<int> &next, rules_t &rules) {
 	const auto [before_rules, after_rules] = rules[page];
@@ -70,35 +92,75 @@ bool check_rule(int page, const std::vector<int> &prev, const std::vector<int> &
 	return true;
 }
 
+bool check_sequence(const std::vector<int> &sequence,  rules_t &rules) {
+	// std::cout << "\ncheck_sequence()";
+	// print_vec(sequence);
+	if (true) {
+		std::vector<int> after = sequence;
+		std::vector<int> before;
 
-bool check_update(const std::vector<int> pages,  rules_t &rules) {
-	std::vector<int> after = pages;
-	std::vector<int> before;
+		for (auto page : sequence) {
+			after.erase(after.begin());	// pop
+			if (!check_rule(page, before, after, rules)) {
+				return false;
+			}
 
-	for (auto page : pages) {
-		after.erase(after.begin());	// pop
-		if (!check_rule(page, before, after, rules)) {
-			return false;
+			before.push_back(page);
 		}
+	} else if (true) {
+		for (auto [i, n] : enumerate(sequence)) {
+			// std::cout << "\tconsider " << n << " @" << i;
 
-		before.push_back(page);
+			const auto [prerequsite, postrequisite] = rules[n];
+			//check that there is nothing in our after rules
+			for (auto p : postrequisite) {
+				if (appears_after(p, i, sequence)) {
+					// std::cout << " FAIL " << p << " appears after " << n << "\n";
+					return false;
+				}
+			}
+
+			for (auto p : prerequsite) {
+				if (appears_before(p, i, sequence)) {
+					// std::cout << " FAIL " << p << " appears before " << n << "\n";
+					return false;
+				}
+			}
+		}
+		// std::cout << " OK\n";
+	} else {
+		for (auto [i, n] : enumerate(sequence)) {
+			std::cout << "\tconsider " << n << " @" << i;
+
+			const auto [prerequsite, postrequisite] = rules[n];
+
+			for (auto p : postrequisite) {
+				if (appears_after(p, i, sequence)) {
+					// std::cout << " FAIL " << p << " appears after " << n << "\n";
+					return false;
+				}
+			}
+
+			// for (auto p : prerequsite) {
+			// 	if (appears_before(p, i, sequence)) {
+			// 		// std::cout << " FAIL " << p << " appears before " << n << "\n";
+			// 		return false;
+			// 	}
+			// }
+		}
+		// std::cout << " OK\n";
+
 	}
-
 	return true;
-}
-
-long find_middle(std::vector<int> const &pages) {
-	auto mid = pages.begin() + ((int)pages.size() / 2);
-	return (long)*mid;
 }
 
 long part1(const data_collection_t data) {
 	long solution = 0;
 	auto [rules, updates] = data;
 
-	for (auto update : updates) {
-		if (check_update(update, rules)) {
-			solution += find_middle(update);
+	for (auto sequence : updates) {
+		if (check_sequence(sequence, rules)) {
+			solution += vec_middle(sequence);
 		}
 	}
 	
@@ -109,43 +171,32 @@ long part1(const data_collection_t data) {
 bool check_placement(int page, int location, const std::vector<int> &pages, rules_t &rules) {
 	std::vector<int> before;
 	std::copy(pages.begin(), pages.begin()+location, std::back_inserter(before));
-	std::cout << "\tBEFORE ";
-	print_vec(before);
 
 	std::vector<int> after;
 	std::copy(pages.begin()+location, pages.end(), std::back_inserter(after));
-	std::cout << "\tAFTER ";
-	print_vec(after);
 
 	return check_rule(page, before, after, rules);
 }
 
-std::vector<int> reorder_update(const std::vector<int> &pages, rules_t &rules) {
+std::vector<int> reorder_sequence(const std::vector<int> &sequence, rules_t &rules) {
 	std::vector<int> fixed;
 
-	for (auto page : pages) {
-		std::cout << "\tPLACE " << page << "\n";
+	for (auto page : sequence) {
 		if (fixed.empty()) {
 			fixed.insert(fixed.begin(), page);
 		} else {
 			int i = 0;
 			for (; i < (int)fixed.size(); i++) {
-				std::cout << "." << i;
 				if (check_placement(page, i, fixed, rules)) {
-					std::cout << "@i" << i;
 					fixed.insert(fixed.begin()+i, page);
 					break;					
 				}
 			}
 			if (i == (int)fixed.size()) {
-				std::cout << "@END";
 				fixed.insert(fixed.end(), page);
 			}
 			
 		}
-
-		std::cout << "\n";
-		print_vec(fixed);
 	}
 
 	return fixed;
@@ -155,11 +206,10 @@ long part2([[maybe_unused]] const data_collection_t data) {
 	long solution = 0;
 	auto [rules, updates] = data;
 
-	for (auto update : updates) {
-		if (!check_update(update, rules)) {
-			std::cout << "\n\n";
-			auto fixed = reorder_update(update, rules);
-			solution += find_middle(fixed);
+	for (auto sequence : updates) {
+		if (!check_sequence(sequence, rules)) {
+			auto fixed = reorder_sequence(sequence, rules);
+			solution += vec_middle(fixed);
 		}		
 	}
 	
