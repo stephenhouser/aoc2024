@@ -1,4 +1,3 @@
-
 #include <iostream>		// cout
 #include <iomanip>		// setw and setprecision on output
 #include <string>		// std::string
@@ -7,7 +6,7 @@
 #include <numeric>		// std::accumulate
 
 #include "aoc2024.h"
-#include "computer.h"
+#include "solution.h"
 
 /* Emulated computer state. */
 typedef struct CPU_ {
@@ -35,7 +34,6 @@ const char *instr_dont_regex = "don't\\(\\)";
 void instr_dont(CPU &cpu, [[maybe_unused]] const std::vector<std::string> &argv) {
 	cpu.enable_mul = false;
 }
-
 
 /* vector of valid instructions */
 std::vector<std::string> i_patterns {

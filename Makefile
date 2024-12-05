@@ -1,3 +1,5 @@
+MAKEFLAGS += --silent
+
 .PHONY: all clean
 
 all:

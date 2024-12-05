@@ -9,7 +9,7 @@
 #include "solution.h"
 
 long part1([[maybe_unused]]const data_collection_t data) {
-	long solution = 0;
+	long solution = 1;
 
 	// TODO: part 1 code here
 
@@ -17,7 +17,7 @@ long part1([[maybe_unused]]const data_collection_t data) {
 }
 
 long part2([[maybe_unused]] const data_collection_t data) {
-	long solution = 0;
+	long solution = 2;
 
 	// TODO: part 2 code here
 

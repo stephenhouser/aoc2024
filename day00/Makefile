@@ -4,9 +4,10 @@
 #
 # 2017-02-10/Stephen Houser
 #
+DAY = $(shell basename $$PWD)
 TARGET = solution
 HEADERS =
-#SOURCES = $(TARGET).cpp
+SOURCES = $(TARGET).cpp
 
 # Gnu make specific!
 ifdef $(SOURCES)
@@ -67,9 +68,10 @@ lint: $(SOURCES)
 	clang-tidy $(SOURCES)
 
 test: $(TARGET)
-	@-./$(TARGET) -v -1 161 -2 -1 test-1.txt
-	@-./$(TARGET) -v -1 -1 -2 48 test-2.txt
-	@-./$(TARGET) -v -1 173517243 -2 100450138 input.txt
+	@-/bin/echo -n "$(DAY) "
+	@-./$(TARGET) -v -s 1 -g 2 test.txt
+	@-/bin/echo -n "$(DAY) "
+	@-./$(TARGET) -v -s 1 -g 2 input.txt
 
 clean:
 	-rm -f *.o

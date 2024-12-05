@@ -11,6 +11,7 @@
 
 /* Output verbosity level; 0 = nothing extra, 1 = more... Set by command line. */
 int verbose = 0;
+bool show_time = false;
 
 const std::vector<std::string> split(const std::string &str, const std::string &delim) {
     std::vector<std::string> tokens;
@@ -65,12 +66,8 @@ const std::vector<std::string> read_lines(const std::string &path) {
 }
 
 int part_wrapper(int part_n, long solution, const std::string &path) {
-    int failure = 0;
-    if (solution >= 0) { // 0 <= solutioin, run the code...
-        if (verbose) {
-            std::cout << "p" << part_n << "=";
-        }
-
+    int success = 0;
+    if (solution >= 0) { // 0 <= solution, run the code...
         auto data = read_data(path);
 
         auto start = std::chrono::high_resolution_clock::now();
@@ -78,32 +75,43 @@ int part_wrapper(int part_n, long solution, const std::string &path) {
         auto finish = std::chrono::high_resolution_clock::now();
 
         if (0 < solution) { // 0 < solution, check the answer
-            failure = (answer == solution) ? 0 : 1;
+            success = (answer == solution) ? 1 : 0;
 
             if (verbose) {
-                const char *success = (failure == 0) ? "√ " : "! ";
-                std::cout << success;
+                if (part_n == 1 && answer == solution) {
+                    std::cout << "silver=\033[1;97m* ";
+                } else if (part_n == 1 && answer != solution) {
+                    std::cout << "silver=  ";
+                } else if (part_n == 2 && answer == solution) {
+                    std::cout << "  gold=\033[1;93m* ";
+                } else if (part_n == 2 && answer != solution) {
+                    std::cout << "  gold=  ";
+                }
             }
         }
 
-        std::cout << std::setw(10) << std::left << answer;
+        std::cout << std::setw(10) << std::left << answer << "\033[0m";
+        std::chrono::duration<double, std::milli> ms_double = finish - start;
 
         if (verbose) {
             /* Getting number of milliseconds as a double. */
-            std::chrono::duration<double, std::milli> ms_double = finish - start;
-            std::cout << " (" 
+            std::cout << " ("
                       << std::setw(10) << std::fixed << std::right << std::setprecision(6)
                       << ms_double.count() << "ms)";
+        } else if (show_time) {
+            /* Getting number of milliseconds as a double. */
+            std::cout << std::fixed << std::setprecision(6) << ms_double.count() << "ms";
         }
     }
 
-    return failure;
+    return success ? 0 : 1;
 }
 
 void help(std::string_view program) {
-    std::cout << program << "[-hv1:2:] <file...>" << "\n";
-    std::cout << "\t-1\trun part 1" << "\n";
-    std::cout << "\t-2\trun part 2" << "\n";
+    std::cout << program << "[-hvt1:2:] <file...>" << "\n";
+    std::cout << "\t-s n\tcheck solution for part 1 (silver) against n; n=-1 don't run, 0=don't check" << "\n";
+    std::cout << "\t-g n\tcheck solution for part 2 (gold) against n; n=-1 don't run, 0=don't check" << "\n";
+    std::cout << "\t-t\tprint execution time" << "\n";
     std::cout << "\t-h\thelp" << "\n";
     std::cout << "\t-v\tverbose" << "\n";
 }
@@ -115,15 +123,18 @@ int main(int argc, char **argv) {
     int exit_code = 0;
 
     int c;
-    while ((c = getopt(argc, argv, "hv1:2:")) != -1) {
+    while ((c = getopt(argc, argv, "hvts:g:")) != -1) {
         switch (c) {
             case 'v': 
                 verbose++;
                 break;
-            case '1':
+            case 't':
+                show_time = true;
+                break;
+            case 's':
                 p1_answer = strtol(optarg, NULL, 10);
                 break;
-            case '2':
+            case 'g':
                 p2_answer = strtol(optarg, NULL, 10);
                 break;
             default:

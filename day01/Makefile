@@ -4,7 +4,8 @@
 #
 # 2017-02-10/Stephen Houser
 #
-TARGET = locations
+DAY = $(shell basename $$PWD)
+TARGET = solution
 HEADERS =
 SOURCES = $(TARGET).cpp
 
@@ -16,6 +17,7 @@ CXX_SOURCES = $(filter %.cpp,$(SOURCES))
 OBJECTS = $(C_SOURCES:.c=.o) $(CXX_SOURCES:.cpp=.o)
 else
 # Include all .c files in current directory
+SOURCES = $(wildcard *.cpp)
 HEADERS = $(wildcard *.h)
 OBJECTS = $(patsubst %.cpp, %.o, $(wildcard *.cpp)) \
 			$(patsubst %.c, %.o, $(wildcard *.c))
@@ -31,13 +33,20 @@ LFLAGS =
 
 # C++ specific flags
 CXX = g++
-CXXFLAGS = -std=c++17
+CXXFLAGS = -std=c++17 -O3
 LXXFLAGS =
 
 .PHONY: default all clean distclean
 
 default: $(TARGET)
+
 all: default
+
+
+info:
+	@echo SOURCES= $(SOURCES)
+	@echo HEADERS= $(HEADERS)
+	@echo OBJECTS= $(OBJECTS)
 
 # default rule for compiling c code
 #%.o: %.c $(HEADERS)
@@ -55,9 +64,14 @@ all: default
 $(TARGET): $(OBJECTS)
 	$(CXX) $(LXXFLAGS) $^ $(LIBS) -o $@
 
+lint: $(SOURCES)
+	clang-tidy $(SOURCES)
+
 test: $(TARGET)
-	@-./$(TARGET) -v -1 11 -2 31 test.txt
-	@-./$(TARGET) -v -1 2450403 -2 24643097 input.txt
+	@-/bin/echo -n "$(DAY) "
+	@-./$(TARGET) -v -s 11 -g 31 test.txt
+	@-/bin/echo -n "$(DAY) "
+	@-./$(TARGET) -v -s 2450403 -g 24643097 input.txt
 
 clean:
 	-rm -f *.o

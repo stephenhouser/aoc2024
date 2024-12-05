@@ -1,4 +1,6 @@
 input.txt
 test.txt
+test-1.txt
+test-2.txt
 *.o
 .vscode

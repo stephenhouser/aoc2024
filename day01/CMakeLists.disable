@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 3.15)
 
 project(day01)
 
-add_executable(locations locations.cpp)
+add_executable(locations locations.cpp aoc2024.cpp)
 
 enable_testing()
 add_test(NAME SAMPLE

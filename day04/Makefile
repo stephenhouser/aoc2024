@@ -4,9 +4,10 @@
 #
 # 2017-02-10/Stephen Houser
 #
+DAY = $(shell basename $$PWD)
 TARGET = solution
 HEADERS =
-#SOURCES = $(TARGET).cpp
+SOURCES = $(TARGET).cpp
 
 # Gnu make specific!
 ifdef $(SOURCES)
@@ -24,7 +25,6 @@ endif
 
 # C Preprocessor flags (for c and c++ code)
 CPPFLAGS = -g -Wall -Weffc++ -Wextra -Wconversion -Wsign-conversion -Werror -Wpedantic
-#CPPFLAGS = -g -Wall -Weffc++ -Wextra  -Werror -Wpedantic
 
 # C specific flags
 CC = gcc
@@ -68,8 +68,10 @@ lint: $(SOURCES)
 	clang-tidy $(SOURCES)
 
 test: $(TARGET)
-	@-./$(TARGET) -v -1   18 -2    9 test.txt
-	@-./$(TARGET) -v -1 2534 -2 1866 input.txt
+	@-/bin/echo -n "$(DAY) "
+	@-./$(TARGET) -v -s 18 -g 9 test.txt
+	@-/bin/echo -n "$(DAY) "
+	@-./$(TARGET) -v -s 2534 -g 1866 input.txt
 
 clean:
 	-rm -f *.o

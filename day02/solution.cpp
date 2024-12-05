@@ -17,20 +17,18 @@
 #include <array>
 #include <chrono>
 
-using data_t = int;
-std::vector<std::vector<data_t>> read_data(const std::string &path);
-
+#include "solution.h"
 #include "aoc2024.h"
 
 /* Maximum difference between two values to be a "safe" level change. */
 const int min_safe_distance = 1;
 const int max_safe_distance = 3;
 
-/* Output verbosity level; 0 = nothing extra, 1 = more... Set by command line. */
-int verbose = 0;
+extern long part1(data_collection_t data);
+extern long part2(data_collection_t data);
 
 /* Read data from path and return a vector for each line in the file. */
-std::vector<std::vector<data_t>> read_data(const std::string &path) {
+const data_collection_t read_data(const std::string &path) {
     auto lines = read_lines(path);
     std::vector<std::vector<data_t>> reports;
 
@@ -124,15 +122,15 @@ std::size_t safe_level(const std::vector<data_t> &report) {
 	return index;
 }
 
-int part1(const std::vector<std::vector<data_t>> reports) {
-    int safe_reports = 0 ;
+long part1(const data_collection_t data) {
+	int safe_reports = 0 ;
 
 	if (verbose > 1) {
 		std::cout << "\n";
 	}
 
-	for (std::size_t i = 0; i < reports.size(); i++) {
-		auto &report = reports[i];
+	for (std::size_t i = 0; i < data.size(); i++) {
+		auto &report = data[i];
 		auto fail_index = safe_level(report);
 
 		if (verbose > 1) {
@@ -154,15 +152,15 @@ int part1(const std::vector<std::vector<data_t>> reports) {
  * - Then work backwards removing each element from the vector and see if it works
  * - 3976 (slow below) vs 2103 (fast here) comparisons on the input.txt
  */
-int part2(const std::vector<std::vector<data_t>> reports) {
-    int safe_reports = 0;
+long part2(const data_collection_t data) {
+	int safe_reports = 0;
 
 	if (verbose > 1) {
 		std::cout << "\n";
 	}
 
-	for (std::size_t i = 0; i < reports.size(); i++) {
-		auto &report = reports[i];
+	for (std::size_t i = 0; i < data.size(); i++) {
+		auto &report = data[i];
 		auto fail_index = safe_level(report);
 
 		if (verbose > 1) {

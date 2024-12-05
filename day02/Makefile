@@ -4,7 +4,8 @@
 #
 # 2017-02-10/Stephen Houser
 #
-TARGET = reports
+DAY = $(shell basename $$PWD)
+TARGET = solution
 HEADERS =
 SOURCES = $(TARGET).cpp
 
@@ -16,6 +17,7 @@ CXX_SOURCES = $(filter %.cpp,$(SOURCES))
 OBJECTS = $(C_SOURCES:.c=.o) $(CXX_SOURCES:.cpp=.o)
 else
 # Include all .c files in current directory
+SOURCES = $(wildcard *.cpp)
 HEADERS = $(wildcard *.h)
 OBJECTS = $(patsubst %.cpp, %.o, $(wildcard *.cpp)) \
 			$(patsubst %.c, %.o, $(wildcard *.c))
@@ -37,7 +39,14 @@ LXXFLAGS =
 .PHONY: default all clean distclean
 
 default: $(TARGET)
+
 all: default
+
+
+info:
+	@echo SOURCES= $(SOURCES)
+	@echo HEADERS= $(HEADERS)
+	@echo OBJECTS= $(OBJECTS)
 
 # default rule for compiling c code
 #%.o: %.c $(HEADERS)
@@ -55,9 +64,14 @@ all: default
 $(TARGET): $(OBJECTS)
 	$(CXX) $(LXXFLAGS) $^ $(LIBS) -o $@
 
+lint: $(SOURCES)
+	clang-tidy $(SOURCES)
+
 test: $(TARGET)
-	@-./$(TARGET) -v -1 2 -2 4 test.txt
-	@-./$(TARGET) -v -1 526 -2 566 input.txt
+	@-/bin/echo -n "$(DAY) "
+	@-./$(TARGET) -v -s 2 -g 4 test.txt
+	@-/bin/echo -n "$(DAY) "
+	@-./$(TARGET) -v -s 526 -g 566 input.txt
 
 clean:
 	-rm -f *.o
