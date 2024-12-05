@@ -17,12 +17,23 @@ Contains my solutions to the [Advent of Code 2024](https://adventofcode.com/2024
 
 ## Problems and Solutions
 
+- Day 0: Template -- [solution](./day00)
 - [Day 1: Historian Hysteria](https://adventofcode.com/2024/day/1) -- [solution](./day01)
 - [Day 2: Red-Nosed Reports](https://adventofcode.com/2024/day/2) -- [solution](./day02)
 - [Day 3: Mull It Over](https://adventofcode.com/2024/day3) -- [solution](./day03)
 - [Day 4: Ceres Search](https://adventofcode.com/2024/day4) -- [solution](./day04)
+- [Day 5: ](https://adventofcode.com/2024/day5) -- [solution](./day05)
 
 ## NOTES
+
+`day00` is a starter code template with a working Makefile. It provides setup with `getopt()`,
+high resolution timing, and a wrapper for reading data. To start a new day from the template:
+
+```
+mkdir dayXX
+cp day00/* dayXX
+``` 
+
 
 Options
     - default, runs part 1 and part 2 and does not check answers, just prints them
