@@ -11,6 +11,7 @@
 
 /* Output verbosity level; 0 = nothing extra, 1 = more... Set by command line. */
 int verbose = 0;
+bool show_time = false;
 
 const std::vector<std::string> split(const std::string &str, const std::string &delim) {
     std::vector<std::string> tokens;
@@ -90,13 +91,16 @@ int part_wrapper(int part_n, long solution, const std::string &path) {
         }
 
         std::cout << std::setw(10) << std::left << answer << "\033[0m";
+        std::chrono::duration<double, std::milli> ms_double = finish - start;
 
         if (verbose) {
             /* Getting number of milliseconds as a double. */
-            std::chrono::duration<double, std::milli> ms_double = finish - start;
-            std::cout << " (" 
-                      << std::setw(10) << std::fixed << std::right << std::setprecision(6)
+            std::cout << " ("
+                      << std::setw(10) << std::fixed << std::right << std::setprecision(4)
                       << ms_double.count() << "ms)";
+        } else if (show_time) {
+            /* Getting number of milliseconds as a double. */
+            std::cout << std::fixed << std::setprecision(6) << ms_double.count() << "ms";
         }
     }
 
@@ -104,7 +108,7 @@ int part_wrapper(int part_n, long solution, const std::string &path) {
 }
 
 void help(std::string_view program) {
-    std::cout << program << "[-hv1:2:] <file...>" << "\n";
+    std::cout << program << "[-hvt1:2:] <file...>" << "\n";
     std::cout << "\t-s n\tcheck solution for part 1 (silver) against n; n=-1 don't run, 0=don't check" << "\n";
     std::cout << "\t-g n\tcheck solution for part 2 (gold) against n; n=-1 don't run, 0=don't check" << "\n";
     std::cout << "\t-t\tprint execution time" << "\n";
@@ -119,10 +123,13 @@ int main(int argc, char **argv) {
     int exit_code = 0;
 
     int c;
-    while ((c = getopt(argc, argv, "hvs:g:")) != -1) {
+    while ((c = getopt(argc, argv, "hvts:g:")) != -1) {
         switch (c) {
             case 'v': 
                 verbose++;
+                break;
+            case 't':
+                show_time = true;
                 break;
             case 's':
                 p1_answer = strtol(optarg, NULL, 10);

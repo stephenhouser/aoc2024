@@ -96,7 +96,7 @@ int part_wrapper(int part_n, long solution, const std::string &path) {
         if (verbose) {
             /* Getting number of milliseconds as a double. */
             std::cout << " ("
-                      << std::setw(10) << std::fixed << std::right << std::setprecision(6)
+                      << std::setw(10) << std::fixed << std::right << std::setprecision(4)
                       << ms_double.count() << "ms)";
         } else if (show_time) {
             /* Getting number of milliseconds as a double. */
