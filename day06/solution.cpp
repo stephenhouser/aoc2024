@@ -86,27 +86,29 @@ bool is_obstacle(const data_collection_t &map, long x, long y) {
 
 // path, did_exit
 std::tuple<std::vector<std::tuple<long, long>>, bool>
-traverse(const data_collection_t &data1) {
-	auto data = data1;
+traverse(const data_collection_t &data, long start_x, long start_y) {
 	std::vector<std::tuple<long, long>> path;
-	std::set<std::string> visited; // "x,y,dx,dy" for loop checking
+	std::set<int> visited;
 
-	auto [x, y] = find_start(data);
+	long x = start_x;
+	long y = start_y;
 	int dx = 0, dy = -1;
 
 	while (is_valid(data, x, y)) {
-		auto node = make_string(x, y, dx, dy);
-		if (visited.find(node) != visited.end()) {
-			// if we visit the same location going the same direction
-			// stop if we hit a loop
+		// also stop if we end up in a previously visited location
+		// going in the same direction. That would be a loop.
+		// cheesy "hash" of node location and direction
+		int n = (x & 0xFF) << 24 | (y & 0xFF) << 16 | (dx & 0xFF) << 8 | (dy & 0xFF);
+		if (visited.find(n) != visited.end()) {
 			break;
 		}
+		visited.insert(n);
 
-		visited.insert(node);
-
+		// record current location in path
 		path.push_back({x, y});
+		// set(data, x, y, '+');
 
-		set(data, x, y, '+');
+		// move to next location
 		while (is_obstacle(data, x+dx, y+dy)) {
 			// keep turing until we find a path.
 			// should always be able to go back the way we came.
@@ -121,7 +123,8 @@ traverse(const data_collection_t &data1) {
 }
 
 long part1(const data_collection_t data) {
-	auto [path, _] = traverse(data);
+	auto [start_x, start_y] = find_start(data);
+ 	auto [path, _] = traverse(data, start_x, start_y);
 	std::set<std::tuple<long, long>> visited(path.begin(), path.end());
 	return visited.size();
 }
@@ -136,9 +139,12 @@ long part2(const data_collection_t data) {
 
 	std::set<std::string> visited; // we already tried here
 
-	auto [path, _] = traverse(data);
 	auto [start_x, start_y] = find_start(data);
+	auto [path, _] = traverse(data, start_x, start_y);
 
+	// is there a way to short-circuit this?
+	// e.g. don't restart at the beginning but restart from where
+	// we last placed and tested an obstacle?
 	for (auto [x, y] : path) {
 		if (x == start_x && y == start_y) {
 			continue;
@@ -151,7 +157,7 @@ long part2(const data_collection_t data) {
 
 			data_collection_t test_map = data;
 			set(test_map, x, y, '%');
-			auto [_, escaped] = traverse(test_map);
+			auto [_, escaped] = traverse(test_map, start_x, start_y);
 			if (!escaped) {
 				solution++;
 			}
