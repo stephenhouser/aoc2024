@@ -1,0 +1,80 @@
+#include <iostream>
+#include <vector>
+#include <map>
+#include <queue>
+#include <set>
+
+// Function to perform topological sorting
+bool topologicalSort(const std::map<int, std::vector<int>>& graph,
+                     const std::vector<int>& sequence) {
+    std::map<int, int> indegree;
+    std::queue<int> zeroIndegree;
+    std::set<int> visited;
+
+    // Initialize indegree for each node
+    for (const auto& [node, neighbors] : graph) {
+        if (indegree.find(node) == indegree.end()) {
+            indegree[node] = 0;
+        }
+        for (const auto& neighbor : neighbors) {
+            indegree[neighbor]++;
+        }
+    }
+
+    // Enqueue all nodes with zero indegree
+    for (const auto& [node, _] : indegree) {
+        if (indegree[node] == 0) {
+            zeroIndegree.push(node);
+        }
+    }
+
+    std::vector<int> topologicalOrder;
+
+    while (!zeroIndegree.empty()) {
+        int node = zeroIndegree.front();
+        zeroIndegree.pop();
+        topologicalOrder.push_back(node);
+
+        for (const auto& neighbor : graph.at(node)) {
+            indegree[neighbor]--;
+            if (indegree[neighbor] == 0) {
+                zeroIndegree.push(neighbor);
+            }
+        }
+    }
+
+    // Validate the topological order with the given sequence
+    auto seqIt = sequence.begin();
+    for (const auto& node : topologicalOrder) {
+        while (seqIt != sequence.end() && *seqIt != node) {
+            ++seqIt;
+        }
+        if (seqIt == sequence.end()) {
+            return false; // Sequence does not maintain the order
+        }
+        ++seqIt;
+    }
+    return true;
+}
+
+int main() {
+    // Define precedence rules as a directed graph
+    std::map<int, std::vector<int>> graph = {
+        {45, {67}},
+        {12, {78}}
+    };
+
+    // Sequence to validate
+    std::vector<int> sequence = {45, 67, 12, 78};
+
+    // Check if the sequence satisfies the precedence rules
+    bool isValid = topologicalSort(graph, sequence);
+
+    if (isValid) {
+        std::cout << "The sequence is valid according to the precedence rules." << std::endl;
+    } else {
+        std::cout << "The sequence is NOT valid according to the precedence rules." << std::endl;
+    }
+
+    return 0;
+}

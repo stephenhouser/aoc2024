@@ -69,11 +69,11 @@ lint: $(SOURCES)
 
 test: $(TARGET)
 	@-/bin/echo -n "$(DAY) "
-	@-./$(TARGET) -v -s 161 -g 161 test-1.txt
+	@-./$(TARGET) -v -s 161 -g 161 test-1.txt || true
 	@-/bin/echo -n "$(DAY) "
-	@-./$(TARGET) -v -s 161 -g 48 test-2.txt
+	@-./$(TARGET) -v -s 161 -g 48 test-2.txt || true
 	@-/bin/echo -n "$(DAY) "
-	@-./$(TARGET) -v -s 173517243 -g 100450138 input.txt
+	@-./$(TARGET) -v -s 173517243 -g 100450138 input.txt || true
 
 clean:
 	-rm -f *.o

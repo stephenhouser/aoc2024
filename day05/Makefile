@@ -72,9 +72,9 @@ lint: $(SOURCES)
 
 test: $(TARGET)
 	@-/bin/echo -n "$(DAY) "
-	@-./$(TARGET) -v -s 143 -g 123 test.txt
+	@-./$(TARGET) -v -s 143 -g 123 test.txt || true
 	@-/bin/echo -n "$(DAY) "
-	@-./$(TARGET) -v -s 5713 -g 5180 input.txt
+	@-./$(TARGET) -v -s 5713 -g 5180 input.txt || true
 
 clean:
 	-rm -f *.o
