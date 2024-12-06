@@ -25,8 +25,6 @@ endif
 
 # C Preprocessor flags (for c and c++ code)
 CPPFLAGS = -g -Wall -Weffc++ -Wextra -Wconversion -Wsign-conversion -Werror -Wpedantic
-# -Wno-effc++ 
-#-Wno-sign-conversion -Wno-conversion
 
 # C specific flags
 CC = gcc

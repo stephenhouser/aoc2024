@@ -38,6 +38,15 @@ char get(const charmap_t &charmap, size_t x, size_t y) {
 	return get(charmap, (long)x, (long)y);
 }
 
+
+bool is_char(const charmap_t &charmap, long x, long y, char c) {
+	return is_valid(charmap, x, y) && charmap[(size_t)y][(size_t)x] == c;
+}
+
+bool is_char(const charmap_t &charmap, size_t x, size_t y, char c) {
+	return is_char(charmap, (long)x, (long)y, c);
+}
+
 char set(charmap_t &charmap, long x, long y, char c) {
 	if (is_valid(charmap, (long)x, (long)y)) {
 		return charmap[(size_t)y][(size_t)x] = c;
@@ -75,27 +84,16 @@ std::ostream& operator<<(std::ostream& os, const charmap_t &charmap) {
 
 
 
-std::tuple<long, long, int, int> find_start(const data_collection_t &map) {
-	for (auto [y, row] : enumerate(map)) {
+std::tuple<long, long, int, int> find_start(const charmap_t &charmap, char c = '^') {
+	for (auto [y, row] : enumerate(charmap)) {
 		for (auto [x, location] : enumerate(row)) {
-			if (get(map, x, y) == '^') {
+			if (is_char(charmap, x, y, c)) {
 				return {x, y, 0, -1};
 			}
 		}
 	}
 
 	return {-1, -1, 0, 0};
-}
-
-void turn_right(int &dx, int &dy) {
-	int temp = dx;
-	dx = -dy;
-	dy = temp;
-}
-
-bool is_obstacle(const data_collection_t &map, long x, long y) {
-	auto c = get(map, x, y);
-	return c == '#' || c == '%';
 }
 
 // cheesy "hash" of node location and direction
@@ -112,10 +110,10 @@ inline int cheese_hash(long x, long y, int dx, int dy) {
 // the path consists of <x, y, dx, dy> nodes
 using path_node_t = std::tuple<long, long, int, int>;
 std::tuple<std::vector<path_node_t>, bool> traverse(const data_collection_t &data, const path_node_t &start) {
-	std::vector<path_node_t> path;
-	std::set<int> visited;
-
 	auto [x, y, dx, dy] = start;
+
+	std::set<int> visited;
+	std::vector<path_node_t> path;
 
 	while (is_valid(data, x, y)) {
 		// also stop if we end up in a previously visited location
@@ -131,10 +129,12 @@ std::tuple<std::vector<path_node_t>, bool> traverse(const data_collection_t &dat
 		// set(data, x, y, '+');
 
 		// move to next location
-		while (is_obstacle(data, x+dx, y+dy)) {
+		while (is_char(data, x+dx, y+dy, '#')) {
 			// keep turing until we find a path.
 			// should always be able to go back the way we came.
-			turn_right(dx, dy);
+			int temp = dx;
+			dx = -dy;
+			dy = temp;
 		}
 
 		x += dx;
@@ -187,7 +187,7 @@ long part2(const data_collection_t data) {
 			visited.insert(hash);
 
 			data_collection_t test_map = data;
-			set(test_map, x, y, '%');
+			set(test_map, x, y, '#');
 			auto [_, escaped] = traverse(test_map, {prev_x, prev_y, prev_dx, prev_dy});
 			if (!escaped) {
 				solution++;
