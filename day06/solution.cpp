@@ -30,16 +30,16 @@ char set(data_collection_t &map, long unsigned int x, long unsigned int y, char 
 	return '\0';
 }
 
-std::tuple<long, long> find_start(const data_collection_t &map) {
+std::tuple<long, long, int, int> find_start(const data_collection_t &map) {
 	for (auto [y, row] : enumerate(map)) {
 		for (auto [x, location] : enumerate(row)) {
 			if (at(map, x, y) == '^') {
-				return {x, y};
+				return {x, y, 0, -1};
 			}
 		}
 	}
 
-	return {-1, -1};
+	return {-1, -1, 0, 0};
 }
 
 void print_map(const data_collection_t &map) {
@@ -85,14 +85,15 @@ bool is_obstacle(const data_collection_t &map, long x, long y) {
 }
 
 // path, did_exit
-std::tuple<std::vector<std::tuple<long, long>>, bool>
-traverse(const data_collection_t &data, long start_x, long start_y) {
-	std::vector<std::tuple<long, long>> path;
+std::tuple<std::vector<std::tuple<long, long, int, int>>, bool>
+traverse(const data_collection_t &data, long start_x, long start_y, int start_dx, int start_dy) {
+	std::vector<std::tuple<long, long, int, int>> path;
 	std::set<int> visited;
 
 	long x = start_x;
 	long y = start_y;
-	int dx = 0, dy = -1;
+	int dx = start_dx;
+	int dy = start_dy;
 
 	while (is_valid(data, x, y)) {
 		// also stop if we end up in a previously visited location
@@ -105,7 +106,7 @@ traverse(const data_collection_t &data, long start_x, long start_y) {
 		visited.insert(n);
 
 		// record current location in path
-		path.push_back({x, y});
+		path.push_back({x, y, dx, dy});
 		// set(data, x, y, '+');
 
 		// move to next location
@@ -123,9 +124,16 @@ traverse(const data_collection_t &data, long start_x, long start_y) {
 }
 
 long part1(const data_collection_t data) {
-	auto [start_x, start_y] = find_start(data);
- 	auto [path, _] = traverse(data, start_x, start_y);
-	std::set<std::tuple<long, long>> visited(path.begin(), path.end());
+	auto [x, y, dx, dy] = find_start(data);
+ 	auto [path, _] = traverse(data, x, y, dx, dy);
+
+	// put all the path locations into a set and then just count
+	std::set<std::tuple<long, long>> visited;
+	for (auto p : path) {
+		auto [x, y, dx, dy] = p;
+		visited.insert({x, y});
+	}
+	
 	return visited.size();
 }
 
@@ -137,15 +145,59 @@ long part1(const data_collection_t data) {
 long part2(const data_collection_t data) {
 	long solution = 0;
 
-	std::set<std::string> visited; // we already tried here
+	std::set<int> visited; // we already tried here
 
-	auto [start_x, start_y] = find_start(data);
-	auto [path, _] = traverse(data, start_x, start_y);
+	auto [start_x, start_y, start_dx, start_dy] = find_start(data);
+	auto [path, _] = traverse(data, start_x, start_y, start_dx, start_dy);
+
+	long prev_x = start_x;
+	long prev_y = start_y;
+	long prev_dx = start_dx;
+	long prev_dy = start_dy;
 
 	// is there a way to short-circuit this?
 	// e.g. don't restart at the beginning but restart from where
 	// we last placed and tested an obstacle?
-	for (auto [x, y] : path) {
+	for (auto [x, y, dx, dy] : path) {
+		if (x == start_x && y == start_y) {
+			continue;
+		}
+
+		// only test locations we have not tested
+		int node = (x & 0xFF) << 8 | (y & 0xFF);	// cheesy "hash"
+		if (visited.find(node) == visited.end()) {
+			visited.insert(node);
+
+			data_collection_t test_map = data;
+			set(test_map, x, y, '%');
+			auto [_, escaped] = traverse(test_map, prev_x, prev_y, prev_dx, prev_dy);
+			// auto [_, escaped] = traverse(test_map, start_x, start_y);
+			if (!escaped) {
+				solution++;
+			}
+		}
+
+		prev_x = x;
+		prev_y = y;
+		prev_dx = dx;
+		prev_dy = dy;
+	}
+
+	return solution;
+}
+
+long part2_save(const data_collection_t data) {
+	long solution = 0;
+
+	std::set<std::string> visited; // we already tried here
+
+	auto [start_x, start_y, start_dx, start_dy] = find_start(data);
+	auto [path, _] = traverse(data, start_x, start_y, start_dx, start_dy);
+
+	// is there a way to short-circuit this?
+	// e.g. don't restart at the beginning but restart from where
+	// we last placed and tested an obstacle?
+	for (auto [x, y, dx, dy] : path) {
 		if (x == start_x && y == start_y) {
 			continue;
 		}
@@ -157,7 +209,7 @@ long part2(const data_collection_t data) {
 
 			data_collection_t test_map = data;
 			set(test_map, x, y, '%');
-			auto [_, escaped] = traverse(test_map, start_x, start_y);
+			auto [_, escaped] = traverse(test_map, start_x, start_y, start_dx, start_dy);
 			if (!escaped) {
 				solution++;
 			}
