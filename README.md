@@ -22,7 +22,9 @@ Contains my solutions to the [Advent of Code 2024](https://adventofcode.com/2024
 - [Day 2: Red-Nosed Reports](https://adventofcode.com/2024/day/2) -- [solution](./day02)
 - [Day 3: Mull It Over](https://adventofcode.com/2024/day3) -- [solution](./day03)
 - [Day 4: Ceres Search](https://adventofcode.com/2024/day4) -- [solution](./day04)
-- [Day 5: ](https://adventofcode.com/2024/day5) -- [solution](./day05)
+- [Day 5: Print Queue](https://adventofcode.com/2024/day5) -- [solution](./day05)
+- [Day 6: Guard Gallivant](https://adventofcode.com/2024/day6) -- [solution](./day06)
+- [Day 7: ](https://adventofcode.com/2024/day7) -- [solution](./day07)
 
 ## NOTES
 

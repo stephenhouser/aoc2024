@@ -6,9 +6,13 @@
 #include <numeric>		// std::accumulate
 #include <set>
 
+#include <thread>
+#include <mutex>
+
 #include "aoc2024.h"
 #include "solution.h"
 
+bool thread_ripper = true;
 
 /* Read data from path and return a vector for each line in the file. */
 using charmap_t = std::vector<std::vector<char>>;
@@ -109,13 +113,13 @@ inline int cheese_hash(long x, long y, int dx, int dy) {
 // path, did_escape (e.g. did not loop)
 // the path consists of <x, y, dx, dy> nodes
 using path_node_t = std::tuple<long, long, int, int>;
-std::tuple<std::vector<path_node_t>, bool> traverse(const data_collection_t &data, const path_node_t &start) {
+std::tuple<std::vector<path_node_t>, bool> traverse(const charmap_t &charmap, const path_node_t &start) {
 	auto [x, y, dx, dy] = start;
 
 	std::set<int> visited;
 	std::vector<path_node_t> path;
 
-	while (is_valid(data, x, y)) {
+	while (is_valid(charmap, x, y)) {
 		// also stop if we end up in a previously visited location
 		// going in the same direction. That would be a loop.
 		int hash = cheese_hash(x, y, dx, dy);
@@ -129,7 +133,7 @@ std::tuple<std::vector<path_node_t>, bool> traverse(const data_collection_t &dat
 		// set(data, x, y, '+');
 
 		// move to next location
-		while (is_char(data, x+dx, y+dy, '#')) {
+		while (is_char(charmap, x+dx, y+dy, '#')) {
 			// keep turing until we find a path.
 			// should always be able to go back the way we came.
 			int temp = dx;
@@ -141,12 +145,12 @@ std::tuple<std::vector<path_node_t>, bool> traverse(const data_collection_t &dat
 		y += dy;
 	}
 
-	return {path, !is_valid(data, x, y)};
+	return {path, !is_valid(charmap, x, y)};
 }
 
-long part1(const data_collection_t data) {
-	auto [x, y, dx, dy] = find_start(data);
- 	auto [path, _] = traverse(data, {x, y, dx, dy});
+long part1(const charmap_t charmap) {
+	auto [x, y, dx, dy] = find_start(charmap);
+ 	auto [path, _] = traverse(charmap, {x, y, dx, dy});
 
 	// put all the path locations into a set and then just count
 	std::set<std::tuple<long, long>> visited;
@@ -163,13 +167,16 @@ long part1(const data_collection_t data) {
 // 1940 to low (last)
 // 1976 !!
 // 2136 too high (106)
-long part2(const data_collection_t data) {
+long part2(const data_collection_t charmap) {
 	long solution = 0;
+
+	std::vector<std::thread> threads;
+	std::mutex solution_lock;
 
 	std::set<int> visited; // we already tried here
 
-	auto [start_x, start_y, start_dx, start_dy] = find_start(data);
-	auto [path, _] = traverse(data, {start_x, start_y, start_dx, start_dy});
+	auto [start_x, start_y, start_dx, start_dy] = find_start(charmap);
+	auto [path, _] = traverse(charmap, {start_x, start_y, start_dx, start_dy});
 
 	auto prev_x = start_x;
 	auto prev_y = start_y;
@@ -186,11 +193,28 @@ long part2(const data_collection_t data) {
 		if (visited.find(hash) == visited.end()) {
 			visited.insert(hash);
 
-			data_collection_t test_map = data;
-			set(test_map, x, y, '#');
-			auto [_, escaped] = traverse(test_map, {prev_x, prev_y, prev_dx, prev_dy});
-			if (!escaped) {
-				solution++;
+			if (thread_ripper) {
+				// Spin off another thread to do the work. Join to it at the end
+				auto t_func = [&charmap, x, y, prev_x, prev_y, prev_dx, prev_dy, &solution, &solution_lock]{
+					charmap_t copy = charmap;
+					set(copy, x, y, '#');
+					auto [_, escaped] = traverse(copy, {prev_x, prev_y, prev_dx, prev_dy});
+
+					if (!escaped) {
+						solution_lock.lock();
+						solution++;
+						solution_lock.unlock();
+					}
+				};
+
+				threads.push_back(std::thread(t_func));
+			} else {
+				data_collection_t test_map = charmap;
+				set(test_map, x, y, '#');
+				auto [_, escaped] = traverse(test_map, {prev_x, prev_y, prev_dx, prev_dy});
+				if (!escaped) {
+					solution++;
+				}
 			}
 		}
 
@@ -201,6 +225,12 @@ long part2(const data_collection_t data) {
 		prev_y = y;
 		prev_dx = dx;
 		prev_dy = dy;
+	}
+
+	if (thread_ripper) {
+		for (auto &t : threads) {
+			t.join();
+		}
 	}
 
 	return solution;
