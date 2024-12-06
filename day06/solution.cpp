@@ -133,7 +133,7 @@ long part1(const data_collection_t data) {
 		auto [x, y, dx, dy] = p;
 		visited.insert({x, y});
 	}
-	
+
 	return visited.size();
 }
 
@@ -181,39 +181,6 @@ long part2(const data_collection_t data) {
 		prev_y = y;
 		prev_dx = dx;
 		prev_dy = dy;
-	}
-
-	return solution;
-}
-
-long part2_save(const data_collection_t data) {
-	long solution = 0;
-
-	std::set<std::string> visited; // we already tried here
-
-	auto [start_x, start_y, start_dx, start_dy] = find_start(data);
-	auto [path, _] = traverse(data, start_x, start_y, start_dx, start_dy);
-
-	// is there a way to short-circuit this?
-	// e.g. don't restart at the beginning but restart from where
-	// we last placed and tested an obstacle?
-	for (auto [x, y, dx, dy] : path) {
-		if (x == start_x && y == start_y) {
-			continue;
-		}
-
-		// only test locations we have not tested
-		auto node = make_string(x, y, 0, 0);
-		if (visited.find(node) == visited.end()) {
-			visited.insert(node);
-
-			data_collection_t test_map = data;
-			set(test_map, x, y, '%');
-			auto [_, escaped] = traverse(test_map, start_x, start_y, start_dx, start_dy);
-			if (!escaped) {
-				solution++;
-			}
-		}
 	}
 
 	return solution;
