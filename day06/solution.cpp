@@ -4,6 +4,7 @@
 #include <vector>		// std::vector
 #include <regex>		// std::regex regular expressions
 #include <numeric>		// std::accumulate
+#include <set>
 
 #include "aoc2024.h"
 #include "solution.h"
@@ -72,47 +73,90 @@ void turn_right(int &dx, int &dy) {
 	}
 }
 
-long part1(const data_collection_t data) {
-	long solution = 0;
+std::string make_string(long x, long y, int dx, int dy) {
+	char buffer[256];
+	sprintf(buffer, "%ld,%ld,%d,%d", x, y, dx, dy);
+	return std::string(buffer);
+}
 
-	data_collection_t mapped = data;
+bool is_obstacle(const data_collection_t &map, long x, long y) {
+	auto c = at(map, x, y);
+	return c == '#' || c == '%';
+}
+
+// path, did_exit
+std::tuple<std::vector<std::tuple<long, long>>, bool>
+traverse(const data_collection_t &data1) {
+	auto data = data1;
+	std::vector<std::tuple<long, long>> path;
+	std::set<std::string> visited; // "x,y,dx,dy" for loop checking
+
 	auto [x, y] = find_start(data);
 	int dx = 0, dy = -1;
 
-	while (is_valid(mapped, x, y)) {
-		// std::cout << "(" << x << "," << y << ") (" << dx << "," << dy << ") " << solution << "\n";
-		// print_map(mapped);
-
-		// count current spot
-		if (at(mapped, x, y) != 'X') {
-			solution++;
+	while (is_valid(data, x, y)) {
+		auto node = make_string(x, y, dx, dy);
+		if (visited.find(node) != visited.end()) {
+			// if we visit the same location going the same direction
+			// stop if we hit a loop
+			break;
 		}
 
-		set(mapped, x, y, 'X');
+		visited.insert(node);
 
-		// move to next location
-		char next = at(mapped, x+dx, y+dy);
-		if (next == '\0') {
-			break;
-		} else if (next == '#') {
+		path.push_back({x, y});
+
+		set(data, x, y, '+');
+		while (is_obstacle(data, x+dx, y+dy)) {
+			// keep turing until we find a path.
+			// should always be able to go back the way we came.
 			turn_right(dx, dy);
 		}
 
 		x += dx;
 		y += dy;
-		// std::cout << "\t(" << x << "," << y << ") (" << dx << "," << dy << ") " << std::endl;
-		// std::cout << std::endl;
 	}
 
-	// TODO: part 1 code here
-
-	return solution;
+	return {path, !is_valid(data, x, y)};
 }
 
-long part2([[maybe_unused]] const data_collection_t data) {
-	long solution = 2;
+long part1(const data_collection_t data) {
+	auto [path, _] = traverse(data);
+	std::set<std::tuple<long, long>> visited(path.begin(), path.end());
+	return visited.size();
+}
 
-	// TODO: part 2 code here
+// 1922 too low
+// 1934 too low
+// 1940 to low (last)
+// 1976 !!
+// 2136 too high (106)
+long part2(const data_collection_t data) {
+	long solution = 0;
+
+	std::set<std::string> visited; // we already tried here
+
+	auto [path, _] = traverse(data);
+	auto [start_x, start_y] = find_start(data);
+
+	for (auto [x, y] : path) {
+		if (x == start_x && y == start_y) {
+			continue;
+		}
+
+		// only test locations we have not tested
+		auto node = make_string(x, y, 0, 0);
+		if (visited.find(node) == visited.end()) {
+			visited.insert(node);
+
+			data_collection_t test_map = data;
+			set(test_map, x, y, '%');
+			auto [_, escaped] = traverse(test_map);
+			if (!escaped) {
+				solution++;
+			}
+		}
+	}
 
 	return solution;
 }
