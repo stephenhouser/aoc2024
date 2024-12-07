@@ -9,7 +9,7 @@
 #include "aoc2024.h"
 #include "solution.h"
 
-bool flag_backward = false;
+bool flag_backward = true;
 
 /* combinations
  * Returns all combinations of chars with replacement into length n strings. 
@@ -50,45 +50,50 @@ long concatenate(long a, long b) {
 
 
 /* */
-int solver_p1_forward(long answer, long current, std::vector<long> &nums, size_t idx) {
+bool solver_p1_forward(long answer, long current, std::vector<long> &nums, size_t idx) {
 	if (idx == 0) {
 		return solver_p1_forward(answer, nums[idx], nums, 1);
 	}
 
 	if (idx == nums.size()) {
-		return answer == current ? 1 : 0;
+		return answer == current;
 	}
 
 	if (current > answer) {
-		return 0;
+		return false;
 	}
 
 	return solver_p1_forward(answer, current + nums[idx], nums, idx+1)
-	     + solver_p1_forward(answer, current * nums[idx], nums, idx+1);
+	    || solver_p1_forward(answer, current * nums[idx], nums, idx+1);
 }
 
 
 /* faster solution to go backwards in the list... */
-int solver_p1_backward(long answer, long current, std::vector<long> &nums, size_t idx) {
+bool solver_p1_backward(long answer, long current, std::vector<long> &nums, size_t idx) {
 	if (idx == 0) {
-		return current == nums[idx] ? 1 : 0;
+		return current == nums[idx];
 	}
 
 	if (current < nums[idx]) {
-		return 0;
+		return false;
 	}
 
-	int solutions = solver_p1_backward(answer, current - nums[idx], nums, idx-1);
+	if (solver_p1_backward(answer, current - nums[idx], nums, idx-1)) {
+		return true;
+	}
+
 	if (current % nums[idx] == 0) {
-		solutions += solver_p1_backward(answer, current / nums[idx], nums, idx-1);
+		if (solver_p1_backward(answer, current / nums[idx], nums, idx-1)) {
+			return true;
+		}
 	}
 
-	return solutions;
+	return false;
 }
 
 
-int solver_p1(long answer, std::vector<long> &nums) {
-	if (flag_backward || true) {
+bool solver_p1(long answer, std::vector<long> &nums) {
+	if (flag_backward) {
 		return solver_p1_backward(answer, answer, nums, nums.size()-1);
 	} else {
 		return solver_p1_forward(answer, 0, nums, 0);
@@ -113,16 +118,16 @@ int solver_p2_forward(const long answer, long current, std::vector<long> &nums, 
 	} 
 	
 	if (idx == nums.size()) {
-		return answer == current ? 1 : 0;
+		return answer == current;
 	}
 	
 	if (current > answer) {
-		return 0;
+		return false;
 	}
 
 	return solver_p2_forward(answer, concatenate(current, nums[idx]), nums, idx+1)
-		 + solver_p2_forward(answer, current + nums[idx], nums, idx+1)
-		 + solver_p2_forward(answer, current * nums[idx], nums, idx+1);
+		|| solver_p2_forward(answer, current + nums[idx], nums, idx+1)
+		|| solver_p2_forward(answer, current * nums[idx], nums, idx+1);
 }
 
 int count_digits(long n) {
@@ -144,24 +149,30 @@ int solver_p2_backward(long answer, long current, std::vector<long> &nums, size_
 	}
 
 	// deconstruct addition
-	int solutions = solver_p2_backward(answer, current - nums[idx], nums, idx-1);
+	if (solver_p2_backward(answer, current - nums[idx], nums, idx-1)) {
+		return 1;
+	}
 
 	// deconstruct multiplication, iff division results in whole number
 	if (current % nums[idx] == 0) {
-		solutions += solver_p2_backward(answer, current / nums[idx], nums, idx-1);
+		if (solver_p2_backward(answer, current / nums[idx], nums, idx-1)) {
+			return 1;
+		}
 	}
 
 	// deconstruct concatenation, iff we can trim off number from current
 	int digits = count_digits(nums[idx]);
 	if (current % digits == nums[idx]) {
-		solutions += solver_p2_backward(answer, current / digits, nums, idx-1);
+		if (solver_p2_backward(answer, current / digits, nums, idx-1)) {
+			return 1;
+		}
 	}
 
-	return solutions;
+	return 0;
 }
 
 int solver_p2(long answer, std::vector<long> &nums) {
-	if (flag_backward || true) {
+	if (flag_backward) {
 		return solver_p2_backward(answer, answer, nums, nums.size()-1);
 	} else {
 		return solver_p2_forward(answer, nums[0], nums, 1);
