@@ -4,44 +4,73 @@
 #include <vector>		// std::vector
 #include <regex>		// std::regex regular expressions
 #include <numeric>		// std::accumulate
+#include <functional>
 
 #include "aoc2024.h"
 #include "solution.h"
 
-
-void _combinations(size_t n, std::string current, std::vector<std::string>& result) {
-	// Base case: If the current string has reached the length n, add it to the result.
-	if (current.size() == n) {
-		result.push_back(current);
-		return;
-	}
-	
-	// Recurse with '*' added to the current string
-	_combinations(n, current + "*", result);
-	
-	// Recurse with '+' added to the current string
-	_combinations(n, current + "+", result);
-}
-
-std::vector<std::string> combinations(size_t n) {
+/* combinations
+ * Returns all combinations of chars with replacement into length n strings. 
+ * e.g n=3, chars="01", returns ("000", "001", "010", "011", "100", ...)
+ */
+std::vector<std::string> combinations(size_t n, const std::string chars) {
     std::vector<std::string> result;
-    _combinations(n, "", result);
-    return result;
+	std::string current;
+
+	// inner recursive function
+	std::function<void()> _generate = [&]() {
+		if (current.size() == n) {
+			result.push_back(current);
+			return;
+		}
+
+		for (auto c : chars) {
+			current.push_back(c);
+			_generate();
+			current.pop_back();
+		}	
+	};
+
+	_generate();
+	return result;
 }
 
+/* concatenate
+ * Returns `a+b` as if they were strings concatenated together.
+ * e.g. a=42, b=69, returns 4269.
+ */
+long concatenate(long a, long b) {
+	for (long z = b; z > 0; z /= 10) {
+		a *= 10;
+	}
+	return a + b;
+}
+
+
+std::string hash(const std::string operations, std::vector<long> operands) {
+	std::string result(operations);
+
+	for (auto n : operands) {
+		result += std::to_string(n);
+	}
+
+	return result;
+}
 
 long part1([[maybe_unused]]const data_collection_t data) {
 	long solution = 0;
 
+	// maps string, e.g **+12,5,6 to result 
+
 	for (auto [answer, operands] : data) {
-		auto combos = combinations(operands.size()-1);
+		auto combos = combinations(operands.size()-1, "+*");
 		// std::cout << answer << ": " << operands << " -- " << combos << std::endl;
 
 		for (const auto &c : combos) {
 			// std::cout << "\t: " << operands << " -- " << c;
-
-			long total = operands[0];
 			bool ok = true;
+			long total = operands[0];
+
 			for (size_t i = 1; i < operands.size(); i++) {
 				if (c[i-1] == '+') {
 					total += operands[i];
@@ -71,35 +100,13 @@ long part1([[maybe_unused]]const data_collection_t data) {
 	return solution;
 }
 
-void _combinations2(size_t n, std::string current, std::vector<std::string>& result) {
-	// Base case: If the current string has reached the length n, add it to the result.
-	if (current.size() == n) {
-		result.push_back(current);
-		return;
-	}
-	
-	_combinations2(n, current + "|", result);
-	_combinations2(n, current + "*", result);
-	_combinations2(n, current + "+", result);
-}
-
-std::vector<std::string> combinations2(size_t n) {
-    std::vector<std::string> result;
-    _combinations2(n, "", result);
-    return result;
-}
-
-long new_operand(long a, long b) {
-	char buffer[100];
-	sprintf(buffer, "%ld%ld", a, b);
-	return atol(buffer);
-}
 
 long part2([[maybe_unused]] const data_collection_t data) {
 	long solution = 0;
+	std::map<std::string, long> result_cache;
 
 	for (auto [answer, operands] : data) {
-		auto combos = combinations2(operands.size()-1);
+		auto combos = combinations(operands.size()-1, "|+*");
 		// std::cout << answer << ": " << operands << " -- " << combos << std::endl;
 
 		for (const auto &c : combos) {
@@ -107,20 +114,28 @@ long part2([[maybe_unused]] const data_collection_t data) {
 
 			long total = operands[0];
 			bool ok = true;
-			for (size_t i = 1; i < operands.size(); i++) {
-				if (c[i-1] == '+') {
-					total += operands[i];
-				} else if (c[i-1] == '|') {
-					total = new_operand(total, operands[i]);
-				} else {
-					total *= operands[i];
-				}
 
-				if (total > answer) {
-					ok = false;
-					break;
+			// auto hvalue = hash(c, operands);
+			// if (result_cache.find(hvalue) == result_cache.end()) {
+				for (size_t i = 1; i < operands.size(); i++) {
+					if (c[i-1] == '+') {
+						total += operands[i];
+					} else if (c[i-1] == '|') {
+						total = concatenate(total, operands[i]);
+					} else {
+						total *= operands[i];
+					}
+
+					if (total > answer) {
+						ok = false;
+						break;
+					}
 				}
-			}
+			// 	result_cache[hvalue] = total;
+			// } else {
+			// 	total = result_cache[hvalue];
+			// }
+
 
 			if (ok) {
 			 	if (total == answer) {

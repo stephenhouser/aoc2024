@@ -13,6 +13,10 @@
 int verbose = 0;
 bool show_time = false;
 
+int answer_width = 15;
+int time_width = 10;
+int time_precision = 4;
+
 const std::vector<std::string> split(const std::string &str, const std::string &delim) {
     std::vector<std::string> tokens;
     char *str_c { strdup(str.c_str()) };
@@ -90,17 +94,21 @@ int part_wrapper(int part_n, long solution, const std::string &path) {
             }
         }
 
-        std::cout << std::setw(10) << std::left << answer << "\033[0m";
-        std::chrono::duration<double, std::milli> ms_double = finish - start;
+        std::cout << std::setw(answer_width) << std::left 
+                  << answer << "\033[0m";
 
+        std::chrono::duration<double, std::milli> ms_double = finish - start;
         if (verbose) {
             /* Getting number of milliseconds as a double. */
             std::cout << " ("
-                      << std::setw(10) << std::fixed << std::right << std::setprecision(4)
+                      << std::setw(time_width) << std::fixed << std::right 
+                      << std::setprecision(time_precision)
                       << ms_double.count() << "ms)";
         } else if (show_time) {
             /* Getting number of milliseconds as a double. */
-            std::cout << std::fixed << std::setprecision(6) << ms_double.count() << "ms";
+            std::cout << std::fixed 
+                      << std::setprecision(time_precision) 
+                      << ms_double.count() << "ms";
         }
     }
 
@@ -155,7 +163,7 @@ int main(int argc, char **argv) {
     for (int arg = 0; arg < argc; arg++) {
         std::string path{argv[arg]};
         if (verbose) {
-            std::cout << std::setw(10) << std::left << path << "\t";
+            std::cout << std::setw(10) << std::left << path << " ";
         }
 
         try {
