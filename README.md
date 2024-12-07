@@ -24,7 +24,8 @@ Contains my solutions to the [Advent of Code 2024](https://adventofcode.com/2024
 - [Day 4: Ceres Search](https://adventofcode.com/2024/day4) -- [solution](./day04)
 - [Day 5: Print Queue](https://adventofcode.com/2024/day5) -- [solution](./day05)
 - [Day 6: Guard Gallivant](https://adventofcode.com/2024/day6) -- [solution](./day06)
-- [Day 7: ](https://adventofcode.com/2024/day7) -- [solution](./day07)
+- [Day 7: Bridge Repair](https://adventofcode.com/2024/day7) -- [solution](./day07)
+- [Day 8: ](https://adventofcode.com/2024/day8) -- [solution](./day08)
 
 ## NOTES
 
