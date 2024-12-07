@@ -47,54 +47,33 @@ long concatenate(long a, long b) {
 }
 
 
-std::string hash(const std::string operations, std::vector<long> operands) {
-	std::string result(operations);
-
-	for (auto n : operands) {
-		result += std::to_string(n);
-	}
-
-	return result;
-}
-
 long part1([[maybe_unused]]const data_collection_t data) {
 	long solution = 0;
-
-	// maps string, e.g **+12,5,6 to result 
 
 	for (auto [answer, operands] : data) {
 		auto combos = combinations(operands.size()-1, "+*");
 		// std::cout << answer << ": " << operands << " -- " << combos << std::endl;
 
-		for (const auto &c : combos) {
+		for (const auto &operators : combos) {
 			// std::cout << "\t: " << operands << " -- " << c;
-			bool ok = true;
 			long total = operands[0];
-
 			for (size_t i = 1; i < operands.size(); i++) {
-				if (c[i-1] == '+') {
+				if (operators[i-1] == '+') {
 					total += operands[i];
 				} else {
 					total *= operands[i];
 				}
 
 				if (total > answer) {
-					ok = false;
 					break;
 				}
 			}
 
-			if (ok) {
-			 	if (total == answer) {
-					// std::cout << " OK\n";
-					solution += answer;
-					break;
-				} else {
-					// std::cout << " FAIL\n";
-				}
+			if (total == answer) {
+				solution += answer;
+				break;
 			}
 		}
-
 	}
 
 	return solution;
@@ -109,45 +88,34 @@ long part2([[maybe_unused]] const data_collection_t data) {
 		auto combos = combinations(operands.size()-1, "|+*");
 		// std::cout << answer << ": " << operands << " -- " << combos << std::endl;
 
-		for (const auto &c : combos) {
+		// check each combination of operators...
+		for (const auto &combo : combos) {
 			// std::cout << "\t: " << operands << " -- " << c << std::endl;
 
 			long total = operands[0];
-			bool ok = true;
-
-			// auto hvalue = hash(c, operands);
-			// if (result_cache.find(hvalue) == result_cache.end()) {
-				for (size_t i = 1; i < operands.size(); i++) {
-					if (c[i-1] == '+') {
-						total += operands[i];
-					} else if (c[i-1] == '|') {
-						total = concatenate(total, operands[i]);
-					} else {
-						total *= operands[i];
-					}
-
-					if (total > answer) {
-						ok = false;
-						break;
-					}
-				}
-			// 	result_cache[hvalue] = total;
-			// } else {
-			// 	total = result_cache[hvalue];
-			// }
-
-
-			if (ok) {
-			 	if (total == answer) {
-					// std::cout << " OK\n";
-					solution += answer;
-					break;
+			for (size_t i = 1; i < operands.size(); i++) {
+				if (combo[i-1] == '+') {
+					total += operands[i];
+				} else if (combo[i-1] == '|') {
+					total = concatenate(total, operands[i]);
 				} else {
-					// std::cout << " FAIL\n";
+					total *= operands[i];
+				}
+
+				// break early if we go over the answer amount
+				// no need to do more on this path
+				if (total > answer) {
+					break;
 				}
 			}
-		}
 
+			// break early if we found a solution
+			// no need to test more combinations
+			if (total == answer) {
+				solution += answer;
+				break;
+			}
+		}
 	}
 
 	return solution;
@@ -160,18 +128,17 @@ const data_collection_t read_data(const std::string &path) {
 
 	for (const auto &line : lines) {
 		long answer = 0;
-		std::vector<long> operands;
-		std::vector<std::string> raw = split(line, " ");
-		for (const auto &r : raw) {
-			long n = atol(r.c_str());
+		std::vector<long> numbers;
+
+		for (auto n : split(line, " ")) {
 			if (!answer) {
-				answer = n;
+				answer = strtol(n.c_str(), NULL, 10);
 			} else {
-				operands.push_back(n);
+				numbers.push_back(strtol(n.c_str(), NULL, 10));
 			}
 		}
 
-		data.push_back({answer, operands});
+		data.push_back({answer, numbers});
 	}
 
 	return data;
