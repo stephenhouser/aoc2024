@@ -12,7 +12,7 @@
 #include "aoc2024.h"
 #include "solution.h"
 
-bool thread_ripper = true;
+bool thread_ripper = false;
 
 /* Read data from path and return a vector for each line in the file. */
 using charmap_t = std::vector<std::vector<char>>;
@@ -162,6 +162,22 @@ long part1(const charmap_t charmap) {
 	return (long)visited.size();
 }
 
+void search(const charmap_t charmap,
+			long x, long y,
+			long prev_x, long prev_y, int prev_dx, int prev_dy,
+			long &solution) {
+
+	charmap_t copy = charmap;
+	set(copy, x, y, '#');
+	auto [_, escaped] = traverse(copy, {prev_x, prev_y, prev_dx, prev_dy});
+
+	if (!escaped) {
+		// solution_lock.lock();
+		solution++;
+		// solution_lock.unlock();
+	}
+}
+
 // 1922 too low
 // 1934 too low
 // 1940 to low (last)
@@ -194,20 +210,8 @@ long part2(const data_collection_t charmap) {
 			visited.insert(hash);
 
 			if (thread_ripper) {
-				// Spin off another thread to do the work. Join to it at the end
-				auto t_func = [&charmap, x, y, prev_x, prev_y, prev_dx, prev_dy, &solution, &solution_lock]{
-					charmap_t copy = charmap;
-					set(copy, x, y, '#');
-					auto [_, escaped] = traverse(copy, {prev_x, prev_y, prev_dx, prev_dy});
-
-					if (!escaped) {
-						solution_lock.lock();
-						solution++;
-						solution_lock.unlock();
-					}
-				};
-
-				threads.push_back(std::thread(t_func));
+				std::thread t(search, charmap, x, y, prev_x, prev_y, prev_dx, prev_dy, std::ref(solution));
+				threads.push_back(std::move(t));
 			} else {
 				data_collection_t test_map = charmap;
 				set(test_map, x, y, '#');
