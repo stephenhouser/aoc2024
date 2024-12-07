@@ -131,7 +131,7 @@ int main(int argc, char **argv) {
     int exit_code = 0;
 
     int c;
-    while ((c = getopt(argc, argv, "hvts:g:")) != -1) {
+    while ((c = getopt(argc, argv, "bhvts:g:")) != -1) {
         switch (c) {
             case 'v': 
                 verbose++;
@@ -144,6 +144,9 @@ int main(int argc, char **argv) {
                 break;
             case 'g':
                 p2_answer = strtol(optarg, NULL, 10);
+                break;
+            case 'b':
+                flag_backward = true;
                 break;
             default:
                 help(program_name);

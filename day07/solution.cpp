@@ -9,6 +9,8 @@
 #include "aoc2024.h"
 #include "solution.h"
 
+bool flag_backward = false;
+
 /* combinations
  * Returns all combinations of chars with replacement into length n strings. 
  * e.g n=3, chars="01", returns ("000", "001", "010", "011", "100", ...)
@@ -48,9 +50,9 @@ long concatenate(long a, long b) {
 
 
 /* */
-long solver_p1(long answer, long current, std::vector<long> &nums, size_t idx) {
+int solver_p1_forward(long answer, long current, std::vector<long> &nums, size_t idx) {
 	if (idx == 0) {
-		return solver_p1(answer, nums[idx], nums, 1);
+		return solver_p1_forward(answer, nums[idx], nums, 1);
 	}
 
 	if (idx == nums.size()) {
@@ -61,15 +63,43 @@ long solver_p1(long answer, long current, std::vector<long> &nums, size_t idx) {
 		return 0;
 	}
 
-	return solver_p1(answer, current + nums[idx], nums, idx+1)
-	     + solver_p1(answer, current * nums[idx], nums, idx+1);
+	return solver_p1_forward(answer, current + nums[idx], nums, idx+1)
+	     + solver_p1_forward(answer, current * nums[idx], nums, idx+1);
 }
 
-long part1([[maybe_unused]]const data_collection_t data) {
+
+/* faster solution to go backwards in the list... */
+int solver_p1_backward(long answer, long current, std::vector<long> &nums, size_t idx) {
+	if (idx == 0) {
+		return current == nums[idx] ? 1 : 0;
+	}
+
+	if (current < nums[idx]) {
+		return 0;
+	}
+
+	int solutions = solver_p1_backward(answer, current - nums[idx], nums, idx-1);
+	if (current % nums[idx] == 0) {
+		solutions += solver_p1_backward(answer, current / nums[idx], nums, idx-1);
+	}
+
+	return solutions;
+}
+
+
+int solver_p1(long answer, std::vector<long> &nums) {
+	if (flag_backward || true) {
+		return solver_p1_backward(answer, answer, nums, nums.size()-1);
+	} else {
+		return solver_p1_forward(answer, 0, nums, 0);
+	}
+}
+
+long part1(const data_collection_t data) {
 	long solution = 0;
 
 	for (auto [answer, operands] : data) {
-		if (solver_p1(answer, 0, operands, 0)) {
+		if (solver_p1(answer, operands)) {
 			solution += answer;
 		}
 	}
@@ -77,25 +107,73 @@ long part1([[maybe_unused]]const data_collection_t data) {
 	return solution;
 }
 
-long solver_p2(const long answer, long current, std::vector<long> &nums, const size_t idx) {
+int solver_p2_forward(const long answer, long current, std::vector<long> &nums, const size_t idx) {
 	if (idx == 0) {
-		return solver_p2(answer, nums[idx], nums, 1);
-	} else if (idx == nums.size()) {
+		return solver_p2_forward(answer, nums[idx], nums, 1);
+	} 
+	
+	if (idx == nums.size()) {
 		return answer == current ? 1 : 0;
-	} else if (current > answer) {
+	}
+	
+	if (current > answer) {
 		return 0;
 	}
 
-	return solver_p2(answer, concatenate(current, nums[idx]), nums, idx+1)
-		 + solver_p2(answer, current + nums[idx], nums, idx+1)
-		 + solver_p2(answer, current * nums[idx], nums, idx+1);
+	return solver_p2_forward(answer, concatenate(current, nums[idx]), nums, idx+1)
+		 + solver_p2_forward(answer, current + nums[idx], nums, idx+1)
+		 + solver_p2_forward(answer, current * nums[idx], nums, idx+1);
 }
+
+int count_digits(long n) {
+	int digits = 1;
+	for (; n > 0; n /= 10) {
+		digits *= 10;
+	}
+
+	return digits;
+}
+
+int solver_p2_backward(long answer, long current, std::vector<long> &nums, size_t idx) {
+	if (idx == 0) {
+		return current == nums[idx] ? 1 : 0;
+	}
+
+	if (current < nums[idx]) {
+		return 0;
+	}
+
+	// deconstruct addition
+	int solutions = solver_p2_backward(answer, current - nums[idx], nums, idx-1);
+
+	// deconstruct multiplication, iff division results in whole number
+	if (current % nums[idx] == 0) {
+		solutions += solver_p2_backward(answer, current / nums[idx], nums, idx-1);
+	}
+
+	// deconstruct concatenation, iff we can trim off number from current
+	int digits = count_digits(nums[idx]);
+	if (current % digits == nums[idx]) {
+		solutions += solver_p2_backward(answer, current / digits, nums, idx-1);
+	}
+
+	return solutions;
+}
+
+int solver_p2(long answer, std::vector<long> &nums) {
+	if (flag_backward || true) {
+		return solver_p2_backward(answer, answer, nums, nums.size()-1);
+	} else {
+		return solver_p2_forward(answer, nums[0], nums, 1);
+	}
+}
+
 
 long part2([[maybe_unused]] const data_collection_t data) {
 	long solution = 0;
 
 	for (auto [answer, operands] : data) {
-		if (solver_p2(answer, operands[0], operands, 1)) {
+		if (solver_p2(answer, operands)) {
 			solution += answer;
 		}
 	}

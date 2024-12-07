@@ -49,12 +49,12 @@ info:
 	@echo OBJECTS= $(OBJECTS)
 
 # default rule for compiling c code
-#%.o: %.c $(HEADERS)
-#	$(CC) -c $(CPPFLAGS) $(CFLAGS) $< -o $@
+%.o: %.c $(HEADERS)
+	$(CC) -c $(CPPFLAGS) $(CFLAGS) $< -o $@
 
-# default rule for compiling c++ code
-#%.o: %.cpp $(HEADERS)
-#	$(CXX) -c $(CPPFLAGS) $(CXXFLAGS) $< -o $@
+#default rule for compiling c++ code
+%.o: %.cpp $(HEADERS)
+	$(CXX) -c $(CPPFLAGS) $(CXXFLAGS) $< -o $@
 
 # https://www.gnu.org/software/make/manual/html_node/Special-Targets.html
 # if make is killed or interrupted during the execution of their
