@@ -20,6 +20,24 @@ const std::vector<std::tuple<T, U>> zip(std::vector<T> left, std::vector<U> righ
     return zipped;
 }
 
+template <typename T>
+std::ostream& operator<<(std::ostream& os, const std::vector<T> &vec) {
+	std::ostringstream buffer;
+    const char delimiter = ',';
+
+    bool first = true;
+	for (auto n : vec) {
+        if (!first) {
+            os << delimiter;
+        }
+
+        os << n;
+        first = false;
+	}
+
+	return os;
+}
+
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Weffc++"
 template <typename T,
