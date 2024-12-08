@@ -101,17 +101,7 @@ void pp(point_t p) {
 
 point_t mirror(point_t a, point_t b) {
 	auto d = distance(a, b);
-	point_t p({a.c, a.x+d.x, a.y+d.y});
-
-	// std::cout << a.c;
-	// pp(a);
-	// std::cout << "-" << b.c;
-	// pp(b);
-	// std::cout << "=" << p.c;
-	// pp(p);
-	// std::cout << std::endl;
-
-	return p;
+	return {a.c, a.x+d.x, a.y+d.y};
 }
 
 long part1([[maybe_unused]]const data_collection_t data) {
