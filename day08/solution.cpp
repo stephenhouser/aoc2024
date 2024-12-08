@@ -115,6 +115,7 @@ point_t mirror(point_t a, point_t b) {
 }
 
 long part1([[maybe_unused]]const data_collection_t data) {
+	std::set<size_t> antinodes;
 	std::map<char, std::vector<point_t>> graph;
 
 	for (auto [y, row] : enumerate(data)) {
@@ -127,9 +128,6 @@ long part1([[maybe_unused]]const data_collection_t data) {
 	}
 
 	// for each pair of the same letter
-	std::set<size_t> antinodes;
-
-	charmap_t map = data;
 	for (auto m : graph) {
 		std::vector<point_t> points = m.second;
 
@@ -137,15 +135,13 @@ long part1([[maybe_unused]]const data_collection_t data) {
 			for (size_t j = i+1; j < points.size(); j++) {
 				// pair is points[i] and points[j]
 				point_t m1 = mirror(points[i], points[j]);
-				if (set(map, (size_t)m1.x, (size_t)m1.y, '#')) {
-					size_t n = (size_t)m1.x << 32 | (size_t)m1.y;
-					antinodes.insert(n);
+				if (is_valid(data, (size_t)m1.x, (size_t)m1.y)) {
+					antinodes.insert((size_t)m1.x << 32 | (size_t)m1.y);
 				}
 
 				point_t m2 = mirror(points[j], points[i]);
-				if (set(map, (size_t)m2.x, (size_t)m2.y, '#')) {
-					size_t n = (size_t)m2.x << 32 | (size_t)m2.y;
-					antinodes.insert(n);
+				if (is_valid(data, (size_t)m2.x, (size_t)m2.y)) {
+					antinodes.insert((size_t)m2.x << 32 | (size_t)m2.y);
 				}
 			}
 		}
@@ -155,6 +151,7 @@ long part1([[maybe_unused]]const data_collection_t data) {
 }
 
 long part2([[maybe_unused]] const data_collection_t data) {
+	std::set<size_t> antinodes;
 	std::map<char, std::vector<point_t>> graph;
 
 	for (auto [y, row] : enumerate(data)) {
@@ -167,9 +164,6 @@ long part2([[maybe_unused]] const data_collection_t data) {
 	}
 
 	// for each pair of the same letter
-	std::set<size_t> antinodes;
-
-	charmap_t map = data;
 	for (auto m : graph) {
 		std::vector<point_t> points = m.second;
 
@@ -183,7 +177,7 @@ long part2([[maybe_unused]] const data_collection_t data) {
 				point_t d1 = distance(points[i], points[j]);
 				x = points[i].x+d1.x;
 				y = points[i].y+d1.y;
-				while (set(map, (long)x, (long)y, '#')) {
+				while (is_valid(data, (long)x, (long)y)) {
 					antinodes.insert((size_t)x << 32 | (size_t)y);
 					x += d1.x;
 					y += d1.y;
@@ -192,7 +186,7 @@ long part2([[maybe_unused]] const data_collection_t data) {
 				point_t d2 = distance(points[j], points[i]);
 				x = points[i].x+d2.x;
 				y = points[i].y+d2.y;
-				while (set(map, (long)x, (long)y, '#')) {
+				while (is_valid(data, (long)x, (long)y)) {
 					antinodes.insert((size_t)x << 32 | (size_t)y);
 					x += d2.x;
 					y += d2.y;
@@ -201,7 +195,6 @@ long part2([[maybe_unused]] const data_collection_t data) {
 		}
 	}
 
-	std::cout << "\n" << map;
 	return (long)antinodes.size();
 }
 
