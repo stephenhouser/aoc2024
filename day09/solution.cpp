@@ -4,6 +4,7 @@
 #include <vector>		// std::vector
 #include <regex>		// std::regex regular expressions
 #include <numeric>		// std::accumulate
+#include <chrono>       // high resolution timer
 
 #include "aoc2024.h"
 #include "solution.h"
@@ -137,7 +138,13 @@ long part2([[maybe_unused]] const data_collection_t data) {
 	std::vector<file_t> file_list;
 	std::vector<file_t> free_list;
 
+
+	auto start = std::chrono::high_resolution_clock::now();
+
 	map_disk(data, file_list, free_list);
+
+	auto map_time = std::chrono::high_resolution_clock::now();
+
 	if (verbose > 1) { std::cout << std::endl; print_disk(file_list); };
 
 	// using std::for_each...
@@ -179,6 +186,8 @@ long part2([[maybe_unused]] const data_collection_t data) {
 		}
 	}
 
+	auto defrag_time = std::chrono::high_resolution_clock::now();
+
 	if (verbose > 1) print_disk(file_list);
 
 	// compute checksum, sum of (block * file.id)
@@ -189,6 +198,29 @@ long part2([[maybe_unused]] const data_collection_t data) {
 		solution += file.id * (((long)file.size*(2 * (long)file.block + (long)file.size - 1)) / 2);
 	}
 
+	if (verbose > 1) {
+		auto cksum_time = std::chrono::high_resolution_clock::now();
+
+		std::chrono::duration<double, std::milli> ms_double = map_time - start;
+		std::cout << "\n";
+		std::cout << "   map_time: "
+				<< std::setw(10) << std::fixed << std::right 
+				<< std::setprecision(4)
+				<< ms_double.count() << "ms\n";
+
+		ms_double = defrag_time - map_time;
+		std::cout << "defrag_time: "
+				<< std::setw(10) << std::fixed << std::right 
+				<< std::setprecision(4)
+				<< ms_double.count() << "ms\n";
+
+		ms_double = cksum_time - defrag_time;
+		std::cout << " cksum_time: "
+				<< std::setw(10) << std::fixed << std::right 
+				<< std::setprecision(4)
+				<< ms_double.count() << "ms\n";
+	}
+	
 	return solution;
 }
 
