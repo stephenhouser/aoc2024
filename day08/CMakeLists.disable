@@ -1,0 +1,24 @@
+#3b7daebc-f11e-472a-bd83-8163067d6065
+cmake_minimum_required(VERSION 3.15)
+project(solution)
+
+set(DATA_FILE input.txt)
+
+add_executable(${PROJECT_NAME}
+  solution.cpp
+  aoc2024.cpp
+  ${CMAKE_CURRENT_BINARY_DIR}/${DATA_FILE}
+)
+
+add_custom_command(
+  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${DATA_FILE}
+  COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_LIST_DIR}/${DATA_FILE} ${CMAKE_CURRENT_BINARY_DIR}/${DATA_FILE}
+  DEPENDS ${CMAKE_CURRENT_LIST_DIR}/${DATA_FILE}
+)
+
+target_link_libraries(${PROJECT_NAME}
+    PRIVATE
+        Catch2::Catch2WithMain
+)
+
+add_test(NAME ${PROJECT_NAME} COMMAND $<TARGET_FILE:${PROJECT_NAME}> WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
