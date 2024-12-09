@@ -31,6 +31,10 @@ bool is_valid(const charmap_t &charmap, long x, long y) {
 	 	&& 0 <= y && (size_t)y < charmap.size();
 }
 
+bool is_valid(const charmap_t &charmap, size_t x, size_t y) {
+	return is_valid(charmap, (long)x, (long)y);
+}
+
 char get(const charmap_t &charmap, long x, long y) {
 	return is_valid(charmap, x, y) ? charmap[(size_t)y][(size_t)x] : ' ';
 }

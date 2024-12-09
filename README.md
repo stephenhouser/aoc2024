@@ -25,7 +25,9 @@ Contains my solutions to the [Advent of Code 2024](https://adventofcode.com/2024
 - [Day 5: Print Queue](https://adventofcode.com/2024/day5) -- [solution](./day05)
 - [Day 6: Guard Gallivant](https://adventofcode.com/2024/day6) -- [solution](./day06)
 - [Day 7: Bridge Repair](https://adventofcode.com/2024/day7) -- [solution](./day07)
-- [Day 8: ](https://adventofcode.com/2024/day8) -- [solution](./day08)
+- [Day 8: Resonant Collinearity](https://adventofcode.com/2024/day8) -- [solution](./day08)
+- [Day 9: Disk Fragmenter](https://adventofcode.com/2024/day9) -- [solution](./day09)
+- [Day 10: ](https://adventofcode.com/2024/day10) -- [solution](./day10)
 
 ## NOTES
 
