@@ -27,7 +27,8 @@ Contains my solutions to the [Advent of Code 2024](https://adventofcode.com/2024
 - [Day 7: Bridge Repair](https://adventofcode.com/2024/day7) -- [solution](./day07)
 - [Day 8: Resonant Collinearity](https://adventofcode.com/2024/day8) -- [solution](./day08)
 - [Day 9: Disk Fragmenter](https://adventofcode.com/2024/day9) -- [solution](./day09)
-- [Day 10: ](https://adventofcode.com/2024/day10) -- [solution](./day10)
+- [Day 10: Hoof It](https://adventofcode.com/2024/day10) -- [solution](./day10)
+- [Day 11: ](https://adventofcode.com/2024/day11) -- [solution](./day11)
 
 ## NOTES
 
