@@ -68,12 +68,51 @@ long part1([[maybe_unused]]const data_collection_t data) {
 	return solution;
 }
 
+// stone_n, times
+std::map<size_t, size_t> stone_map;
+
 long part2([[maybe_unused]] const data_collection_t data) {
-	long solution = 2;
+	size_t blinks = 75;
 
-	// TODO: part 2 code here
+	std::map<size_t, size_t> stones;
+	for (auto stone : data) {
+		stones[stone] += 1;
+	}
 
-	return solution;
+	// for (auto const &[stone, count] : stones) {
+	// 	std::cout << "(" << stone << "," << count << ") ";
+	// }
+	// std::cout << std::endl;
+
+	std::map<size_t, size_t> new_stones;
+	while (blinks--) {		
+		new_stones.clear();
+
+		for (auto const &[stone, count] : stones) {
+			if (stone == 0) {
+				new_stones[1] += count;
+			} else if (digits(stone) % 2 == 0) {
+				auto [first, second] = split_number(stone);
+				new_stones[first] += count;
+				new_stones[second] += count;
+			} else {
+				new_stones[stone * 2024] += count;
+			}
+		}
+
+		// for (auto const &[stone, count] : new_stones) {
+		// 	std::cout << "(" << stone << "," << count << ") ";
+		// }
+		// std::cout << std::endl;
+		stones = new_stones;
+	}
+
+	// std::cout << stones << std::endl;
+	long solution = 0;
+	for (auto const &[stone, count] : stones) {
+		solution += (long)count;
+	}
+	return (long)solution;
 }
 
 /* Read data from path and return a vector for each line in the file. */
