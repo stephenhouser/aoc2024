@@ -4,8 +4,6 @@
 #
 # 2017-02-10/Stephen Houser
 #
-PROFILE = 0
-
 DAY = $(shell basename $$PWD)
 TARGET = solution
 HEADERS =
@@ -35,13 +33,8 @@ LFLAGS =
 
 # C++ specific flags
 CXX = g++
-ifeq ($(PROFILE),1)
-CXXFLAGS = -std=c++17 -pg
-LXXFLAGS = -pg
-else
 CXXFLAGS = -std=c++17 -O3
 LXXFLAGS =
-endif
 
 .PHONY: default all clean distclean
 
@@ -56,12 +49,12 @@ info:
 	@echo OBJECTS= $(OBJECTS)
 
 # default rule for compiling c code
-%.o: %.c $(HEADERS)
-	$(CC) -c $(CPPFLAGS) $(CFLAGS) $< -o $@
+#%.o: %.c $(HEADERS)
+#	$(CC) -c $(CPPFLAGS) $(CFLAGS) $< -o $@
 
 # default rule for compiling c++ code
-%.o: %.cpp $(HEADERS)
-	$(CXX) -c $(CPPFLAGS) $(CXXFLAGS) $< -o $@
+#%.o: %.cpp $(HEADERS)
+#	$(CXX) -c $(CPPFLAGS) $(CXXFLAGS) $< -o $@
 
 # https://www.gnu.org/software/make/manual/html_node/Special-Targets.html
 # if make is killed or interrupted during the execution of their
@@ -74,14 +67,11 @@ $(TARGET): $(OBJECTS)
 lint: $(SOURCES)
 	clang-tidy $(SOURCES)
 
-profile:
-	gprof $(TARGET) > $(TARGET).profile
-
 test: $(TARGET)
 	@-/bin/echo -n "$(DAY) "
-	@-./$(TARGET) -v -s 55312 -g 65601038650482 test.txt || true
+	@-./$(TARGET) -v -s 1 -g 2 test.txt || true
 	@-/bin/echo -n "$(DAY) "
-	@-./$(TARGET) -v -s 187738 -g 223767210249237 input.txt || true
+	@-./$(TARGET) -v -s 1 -g 2 input.txt || true
 
 clean:
 	-rm -f *.o
