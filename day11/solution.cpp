@@ -40,6 +40,9 @@ std::tuple<size_t, size_t> split_number(size_t n) {
 
 	size_t second = n - (first * mult);
 	return {first, second};
+
+	// size_t divisor = (size_t)pow(10, (digits(n) / 2));
+	// return {n / divisor, n % divisor};
 }
 
 /* *** Iterative Verion *** */
