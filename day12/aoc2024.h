@@ -39,6 +39,26 @@ std::ostream& operator<<(std::ostream& os, const std::vector<T> &vec) {
 	return os;
 }
 
+// template <typename T>
+std::ostream& operator<<(std::ostream& os, const std::vector<std::string> &vec) {
+	std::ostringstream buffer;
+    const char delimiter = ',';
+
+    bool first = true;
+	for (auto n : vec) {
+        if (!first) {
+            os << delimiter;
+        }
+
+        os << n;
+        first = false;
+	}
+
+	return os;
+}
+
+
+
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Weffc++"
 template <typename T,
