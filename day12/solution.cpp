@@ -5,6 +5,7 @@
 #include <regex>		// std::regex regular expressions
 #include <numeric>		// std::accumulate
 #include <unordered_set>
+#include <unordered_map>
 
 #include "aoc2024.h"
 #include "solution.h"
@@ -31,11 +32,13 @@ struct region_t {
 	int area = 0;
 	int perimeter = 0;
 	std::unordered_set<point_t> points{};
+	std::unordered_map<point_t, long> neighbors{};
 
 	void add(long x, long y, int boundaries) {
 		perimeter += boundaries;
 		area += 1;
 		points.insert(make_point(x, y));
+		neighbors[make_point(x, y)] = boundaries;
 	}
 
 	bool remove(long x, long y) {
@@ -51,6 +54,11 @@ struct region_t {
 
 	std::tuple<long, long> pop() {
 		auto point = unmake_point(points.extract(points.begin()).value());
+		return point;
+	}
+
+	std::tuple<long, long> first() {
+		auto point = unmake_point(*points.begin());
 		return point;
 	}
 
@@ -190,11 +198,137 @@ long part1([[maybe_unused]]const data_collection_t map) {
 	return solution;
 }
 
-long part2([[maybe_unused]] const data_collection_t data) {
-	long solution = 2;
+int os_corners(long x, long y, region_t &region) {
+	//NE, SE, SW, NW
+	int corners = 0;
+	if (!region.contains(x, y-1) && !region.contains(x+1, y)) {
+		corners++;
+	}
+	if (!region.contains(x+1, y) && !region.contains(x, y+1)) {
+		corners++;
+	}
+	if (!region.contains(x, y+1) && !region.contains(x-1, y)) {
+		corners++;
+	}
+	if (!region.contains(x-1, y) && !region.contains(x, y-1)) {
+		corners++;
+	}
 
-	// TODO: part 2 code here
+	return corners;
+}
 
+int is_corners(long x, long y, region_t &region) {
+	//NE, SE, SW, NW
+	int corners = 0;
+	if (region.contains(x, y-1) && region.contains(x+1, y) && !region.contains(x+1, y-1)) {
+		corners++;
+	}
+	if (region.contains(x+1, y) && region.contains(x, y+1) && !region.contains(x+1, y+1)) {
+		corners++;
+	}
+	if (region.contains(x, y+1) && region.contains(x-1, y) && !region.contains(x-1, y+1)) {
+		corners++;
+	}
+	if (region.contains(x-1, y) && region.contains(x, y-1) && !region.contains(x-1, y-1)) {
+		corners++;
+	}
+
+	return corners;
+}
+
+
+long part2([[maybe_unused]] const data_collection_t map) {
+	long solution = 0;
+
+	std::vector<region_t> regions;
+
+	std::cout << std::endl << map;
+
+	// make a region map from the charmap
+	region_t all;
+	auto [size_x, size_y] = size(map);
+	for (long y = 0; y < (long)size_y; ++y) {
+		for (long x = 0; x < (long)size_x; ++x) {
+			all.add(x, y, 0);
+		}
+	}
+
+	while (!all.points.empty()) {
+		region_t region;
+		// extract point that will start a new region
+		auto [rx, ry] = all.pop();		
+		region.crop = get(map, rx, ry);
+		
+		std::cout << "REGION:" << rx << "," << ry << "="<< region.crop << std::endl;
+		
+		// start tentative list with this point...
+		region_t tentnative;
+		tentnative.add(rx, ry, 0);
+
+		while (!tentnative.points.empty()) {
+			auto [x, y] = tentnative.pop();
+			int perimeter = 0;
+
+			if (region.contains(x, y)) {
+				continue;
+			}
+
+			// std::cout << "TENT:" << tentnative.points.size() << ":" << x << "," << y << "="<< region.crop << std::endl;
+
+			std::vector<std::tuple<long, long>> dirs = {{0, -1}, {0, 1}, {-1, 0}, {1, 0}};
+			for (auto [dx, dy] : dirs) {
+				auto c_x = x + dx;
+				auto c_y = y + dy;
+				if (same_region(c_x, c_y, region, map)) {
+					all.remove(c_x, c_y);
+					tentnative.add(c_x, c_y, 0);
+				} else {
+					perimeter += 1;
+				}
+			}
+
+			region.add(x, y, perimeter);
+		}
+
+		regions.push_back(region);
+	}
+
+	for (auto &r : regions) {
+		long corn = 0;
+		std::cout << "REGION " << r.crop << std::endl;
+
+		for (auto point : r.points) {
+			auto [x, y] = unmake_point(point);
+
+			corn += os_corners(x, y, r);
+			corn += is_corners(x, y, r);
+
+			std::cout << "\t" << x << "," << y << "=" 
+			          << corn << std::endl;
+		}
+
+		solution += corn * r.area;
+	}
+
+
+
+		// std::cout << "REGION " << r.crop << std::endl;
+
+		// long walls = 0;
+		// for (auto [point, n] : r.neighbors) {
+		// 	auto [x, y] = unmake_point(point);
+		// 	std::cout << "\t" << x << "," << y << "=" << n << std::endl;
+		// 	if (n > 1) {
+		// 		walls++;
+		// 	}
+		// }
+		// auto s = r.area * walls;
+		// solution += s;
+
+		// std::cout << "crop=" << r.crop
+		//           << " area=" << r.area
+		//           << " walls=" << walls
+		// 		  << " cost=" << s << std::endl;
 	return solution;
 }
 
