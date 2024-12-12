@@ -32,11 +32,29 @@ struct region_t {
 	int perimeter = 0;
 	std::unordered_set<point_t> points{};
 
-	void add(long x, long y) {
+	void add(long x, long y, int boundaries) {
+		perimeter += boundaries;
+		area += 1;
 		points.insert(make_point(x, y));
 	}
 
-	bool has(long x, long y) {
+	bool remove(long x, long y) {
+		auto point_it = points.find(make_point(x, y));
+		if (point_it != points.end()) {
+			points.erase(point_it);
+			area -= 1;
+			return true;
+		}
+
+		return false;
+	}
+
+	std::tuple<long, long> pop() {
+		auto point = unmake_point(points.extract(points.begin()).value());
+		return point;
+	}
+
+	bool contains(long x, long y) {
 		return points.find(make_point(x, y)) != points.end();
 	}
 };
@@ -107,123 +125,66 @@ bool same_region(long x, long y, const region_t &region, const charmap_t &map) {
 
 long part1([[maybe_unused]]const data_collection_t map) {
 	long solution = 0;
-
-	// TODO: part 1 code here
-	std::cout << map;
-
 	std::vector<region_t> regions;
 
+	std::cout << map;
+
+	// make a region map from the charmap
 	region_t all;
 	auto [size_x, size_y] = size(map);
 	for (long y = 0; y < (long)size_y; ++y) {
 		for (long x = 0; x < (long)size_x; ++x) {
-			all.add(x, y);
+			all.add(x, y, 0);
 		}
 	}
 
 	while (!all.points.empty()) {
-		// extract point that will start a new region
-		auto point_h = all.points.extract(all.points.begin());
-		auto [x, y] = unmake_point(point_h.value());
-		
 		region_t region;
-		region.crop = get(map, x, y);
-		region.add(x, y);
-		region.area = 0;
-		region.perimeter = 0;
+		// extract point that will start a new region
+		auto [rx, ry] = all.pop();		
+		region.crop = get(map, rx, ry);
 		
-		std::cout << "REGION:" << x << "," << y << "="<< region.crop << std::endl;
+		std::cout << "REGION:" << rx << "," << ry << "="<< region.crop << std::endl;
 		
+		// start tentative list with this point...
 		region_t tentnative;
-		tentnative.add(x, y);
+		tentnative.add(rx, ry, 0);
 
 		while (!tentnative.points.empty()) {
-			auto point_h = tentnative.points.extract(tentnative.points.begin());
+			auto [x, y] = tentnative.pop();
 			int perimeter = 0;
-			auto [x, y] = unmake_point(point_h.value());
 
-			std::cout << "TENT:" << tentnative.points.size() << ":" << x << "," << y << "="<< region.crop << std::endl;
-
-			// check up
-			long c_x = x;
-			long c_y = y-1;
-			point_t c_p = make_point(c_x, c_y);
-			
-			if (!region.has(c_x, c_y)) {
-					if (same_region(c_x, c_y, region, map)) {
-					// std::cout << "UP   " << std::endl;
-					if (all.has(c_x, c_y)) {
-						all.points.erase(all.points.find(c_p));
-					}				
-					tentnative.add(c_x, c_y);
-				} else {
-					perimeter += 1;
-				}
+			if (region.contains(x, y)) {
+				continue;
 			}
-			//check left
-			c_x = x-1;
-			c_y = y;
-			c_p = make_point(c_x, c_y);
 
-			if (!region.has(c_x, c_y)) {
-					if (same_region(c_x, c_y, region, map)) {
-					// std::cout << "UP   " << std::endl;
-					if (all.has(c_x, c_y)) {
-						all.points.erase(all.points.find(c_p));
-					}				
-					tentnative.add(c_x, c_y);
+			// std::cout << "TENT:" << tentnative.points.size() << ":" << x << "," << y << "="<< region.crop << std::endl;
+
+			std::vector<std::tuple<long, long>> dirs = {{0, -1}, {0, 1}, {-1, 0}, {1, 0}};
+			for (auto [dx, dy] : dirs) {
+				auto c_x = x + dx;
+				auto c_y = y + dy;
+				if (same_region(c_x, c_y, region, map)) {
+					all.remove(c_x, c_y);
+					tentnative.add(c_x, c_y, 0);
 				} else {
 					perimeter += 1;
 				}
 			}
 
-			// check down
-			c_x = x;
-			c_y = y+1;
-			c_p = make_point(c_x, c_y);
-
-			if (!region.has(c_x, c_y)) {
-					if (same_region(c_x, c_y, region, map)) {
-					// std::cout << "UP   " << std::endl;
-					if (all.has(c_x, c_y)) {
-						all.points.erase(all.points.find(c_p));
-					}				
-					tentnative.add(c_x, c_y);
-				} else {
-					perimeter += 1;
-				}
-			}
-
-			// check right
-			c_x = x+1;
-			c_y = y;
-			c_p = make_point(c_x, c_y);
-
-			if (!region.has(c_x, c_y)) {
-					if (same_region(c_x, c_y, region, map)) {
-					// std::cout << "UP   " << std::endl;
-					if (all.has(c_x, c_y)) {
-						all.points.erase(all.points.find(c_p));
-					}				
-					tentnative.add(c_x, c_y);
-				} else {
-					perimeter += 1;
-				}
-			}
-
-			region.perimeter += perimeter;
-			region.area += 1;
-			region.add(x, y);
+			region.add(x, y, perimeter);
 		}
 
 		regions.push_back(region);
 	}
-
 	
 	for (const auto &r : regions) {
 		auto s = r.area * r.perimeter;
 		solution += s;
-		std::cout << r.crop << ":" << r.area << "," << r.perimeter << "=" << s << std::endl;
+		std::cout << "crop=" << r.crop 
+		          << " area=" << r.area 
+		          << " perimeter=" << r.perimeter 
+				  << " size=" << s << std::endl;
 	}
 
 	return solution;
