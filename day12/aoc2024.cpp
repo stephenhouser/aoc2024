@@ -79,16 +79,16 @@ int part_wrapper(int part_n, long solution, const std::string &path) {
         auto finish = std::chrono::high_resolution_clock::now();
 
         if (0 < solution) { // 0 < solution, check the answer
-            success = (answer == solution) ? 1 : 0;
+            success = (answer == (size_t)solution) ? 1 : 0;
 
             if (verbose) {
-                if (part_n == 1 && answer == solution) {
+                if (part_n == 1 && answer == (size_t)solution) {
                     std::cout << "silver=\033[1;97m* ";
-                } else if (part_n == 1 && answer != solution) {
+                } else if (part_n == 1 && answer != (size_t)solution) {
                     std::cout << "silver=  ";
-                } else if (part_n == 2 && answer == solution) {
+                } else if (part_n == 2 && answer == (size_t)solution) {
                     std::cout << "  gold=\033[1;93m* ";
-                } else if (part_n == 2 && answer != solution) {
+                } else if (part_n == 2 && answer != (size_t)solution) {
                     std::cout << "  gold=  ";
                 }
             }
