@@ -7,10 +7,48 @@
 #include <unordered_set>
 #include <unordered_map>
 
+using index_t = long;
+using value_t = size_t;
+
+#include "charmap.h"
 #include "aoc2024.h"
 #include "solution.h"
 
 using point_t = size_t;
+
+
+struct pt_t {
+	index_t x;
+	index_t y;
+	index_t z;
+	value_t value;
+
+	/* closest to 0 with preference towards closer x */
+	bool operator<(const pt_t &other) {		
+		// if (this->z < other.z) {
+		// 	return true;
+		// }
+
+		if (this->y < other.y) {
+			return true;
+		}
+
+		return this->x < other.x;
+	}
+
+	bool operator==(const pt_t &other) {
+		return this->x == other.x && this->y == other.y && this->z == other.z;
+	}
+};
+
+template <>
+struct std::hash<pt_t> {
+	size_t operator()(const pt_t &p) const {
+		return std::hash<size_t>()((((size_t)p.x & 0xFFFFFFFF) << 32) | ((size_t)p.y & 0xFFFFFFFF));
+	}
+};
+
+
 
 // cheesy "hash" of node location and direction
 point_t make_point(long x, long y) {
@@ -68,61 +106,12 @@ struct region_t {
 };
 
 
-/* Read data from path and return a vector for each line in the file. */
-using charmap_t = std::vector<std::vector<char>>;
-
-const charmap_t read_charmap(const std::string &path) {
-	auto lines = read_lines(path);
-    charmap_t charmap;
-
-    for (const auto& line : lines) {
-		std::vector<char> map_row(line.begin(), line.end());
-		charmap.push_back(map_row);
-	}
-
-    return charmap;
-}
-
-std::ostream& operator<<(std::ostream& os, const charmap_t &map) {
-	std::ostringstream buffer;
-
-	for (const auto &row : map) {
-		os << row << "\n";
-	}
-
-	return os;
-}
-
-
-bool is_valid(const charmap_t &charmap, long x, long y) {
-	return 0 <= x && (size_t)x < charmap[0].size()
-	 	&& 0 <= y && (size_t)y < charmap.size();
-}
-
-char get(const charmap_t &charmap, long x, long y) {
-	return is_valid(charmap, x, y) ? charmap[(size_t)y][(size_t)x] : ' ';
-}
-
-bool is_char(const charmap_t &charmap, long x, long y, char c) {
-	return is_valid(charmap, x, y) && charmap[(size_t)y][(size_t)x] == c;
-}
-
-std::tuple<size_t, size_t> size(const charmap_t &charmap) {
-	size_t x = 0;
-	size_t y = charmap.size();
-	if (y != 0) {
-		x = charmap[0].size();
-	}
-
-	return {x, y};
-}
-
-bool same_region(long x, long y, const region_t &region, const charmap_t &map) {
-	if (!is_valid(map, x, y)) {
+bool same_region(index_t x, index_t y, const region_t &region, const charmap_t &map) {
+	if (!map.is_valid(x, y)) {
 		return false;
 	}
 
-	char crop = get(map, x, y);
+	char crop = map.get(x, y);
 	if (crop == region.crop) {
 		return true;
 	}
@@ -131,17 +120,18 @@ bool same_region(long x, long y, const region_t &region, const charmap_t &map) {
 }
 
 
-long part1([[maybe_unused]]const data_collection_t map) {
+long part1(const data_collection_t map) {
 	long solution = 0;
 	std::vector<region_t> regions;
 
-	std::cout << map;
+	if (verbose > 1) {
+		std::cout << std::endl << map;
+	}
 
 	// make a region map from the charmap
 	region_t all;
-	auto [size_x, size_y] = size(map);
-	for (long y = 0; y < (long)size_y; ++y) {
-		for (long x = 0; x < (long)size_x; ++x) {
+	for (index_t y = 0; y < map.size_y; ++y) {
+		for (index_t x = 0; x < map.size_x; ++x) {
 			all.add(x, y, 0);
 		}
 	}
@@ -150,9 +140,9 @@ long part1([[maybe_unused]]const data_collection_t map) {
 		region_t region;
 		// extract point that will start a new region
 		auto [rx, ry] = all.pop();		
-		region.crop = get(map, rx, ry);
+		region.crop = map.get(rx, ry);
 		
-		std::cout << "REGION:" << rx << "," << ry << "="<< region.crop << std::endl;
+		// std::cout << "REGION:" << rx << "," << ry << "="<< region.crop << std::endl;
 		
 		// start tentative list with this point...
 		region_t tentnative;
@@ -189,10 +179,12 @@ long part1([[maybe_unused]]const data_collection_t map) {
 	for (const auto &r : regions) {
 		auto s = r.area * r.perimeter;
 		solution += s;
-		std::cout << "crop=" << r.crop 
-		          << " area=" << r.area 
-		          << " perimeter=" << r.perimeter 
-				  << " size=" << s << std::endl;
+		if (verbose > 1) {
+			std::cout << "crop=" << r.crop 
+					<< " area=" << r.area 
+					<< " perimeter=" << r.perimeter 
+					<< " size=" << s << std::endl;
+		}
 	}
 
 	return solution;
@@ -241,14 +233,15 @@ long part2([[maybe_unused]] const data_collection_t map) {
 	long solution = 0;
 
 	std::vector<region_t> regions;
-
-	std::cout << std::endl << map;
+	
+	if (verbose > 1) {
+		std::cout << std::endl << map;
+	}
 
 	// make a region map from the charmap
 	region_t all;
-	auto [size_x, size_y] = size(map);
-	for (long y = 0; y < (long)size_y; ++y) {
-		for (long x = 0; x < (long)size_x; ++x) {
+	for (index_t y = 0; y < map.size_y; ++y) {
+		for (index_t x = 0; x < map.size_x; ++x) {
 			all.add(x, y, 0);
 		}
 	}
@@ -257,9 +250,9 @@ long part2([[maybe_unused]] const data_collection_t map) {
 		region_t region;
 		// extract point that will start a new region
 		auto [rx, ry] = all.pop();		
-		region.crop = get(map, rx, ry);
+		region.crop = map.get(rx, ry);
 		
-		std::cout << "REGION:" << rx << "," << ry << "="<< region.crop << std::endl;
+		// std::cout << "REGION:" << rx << "," << ry << "="<< region.crop << std::endl;
 		
 		// start tentative list with this point...
 		region_t tentnative;
@@ -295,7 +288,7 @@ long part2([[maybe_unused]] const data_collection_t map) {
 
 	for (auto &r : regions) {
 		long corn = 0;
-		std::cout << "REGION " << r.crop << std::endl;
+		// std::cout << "REGION " << r.crop << std::endl;
 
 		for (auto point : r.points) {
 			auto [x, y] = unmake_point(point);
@@ -303,45 +296,21 @@ long part2([[maybe_unused]] const data_collection_t map) {
 			corn += os_corners(x, y, r);
 			corn += is_corners(x, y, r);
 
-			std::cout << "\t" << x << "," << y << "=" 
-			          << corn << std::endl;
+			if (verbose > 1) {
+				std::cout << "\t" << x << "," << y << "=" 
+						<< corn << std::endl;
+			}
 		}
 
 		solution += corn * r.area;
 	}
 
-
-
-		// std::cout << "REGION " << r.crop << std::endl;
-
-		// long walls = 0;
-		// for (auto [point, n] : r.neighbors) {
-		// 	auto [x, y] = unmake_point(point);
-		// 	std::cout << "\t" << x << "," << y << "=" << n << std::endl;
-		// 	if (n > 1) {
-		// 		walls++;
-		// 	}
-		// }
-		// auto s = r.area * walls;
-		// solution += s;
-
-		// std::cout << "crop=" << r.crop
-		//           << " area=" << r.area
-		//           << " walls=" << walls
-		// 		  << " cost=" << s << std::endl;
 	return solution;
 }
 
 /* Read data from path and return a vector for each line in the file. */
 const data_collection_t read_data(const std::string &path) {
-	auto lines = read_lines(path);
-    data_collection_t map;
-
-    for (const auto& line : lines) {
-		std::vector<char> map_row(line.begin(), line.end());
-		map.push_back(map_row);
-	}
-
-    return map;
+	charmap_t charmap(read_lines(path));
+    return charmap;
 }
 

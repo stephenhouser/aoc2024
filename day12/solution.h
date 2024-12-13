@@ -1,8 +1,8 @@
-#include <string>		// std::string
-#include <vector>		// std::vector
 
-using data_t = char;
-using data_collection_t = std::vector<std::vector<data_t>>;
+#include "charmap.h"
+
+// using data_t = char;
+using data_collection_t = charmap_t;
 
 extern long part1(data_collection_t data);
 extern long part2(data_collection_t data);
