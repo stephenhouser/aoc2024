@@ -23,59 +23,18 @@ std::regex a_regex("Button A: X\\+(\\d+), Y\\+(\\d+)");
 std::regex b_regex("Button B: X\\+(\\d+), Y\\+(\\d+)");
 std::regex s_regex("Prize: X=(\\d+), Y=(\\d+)");
 
-value_t solve_linearX(problem_t &problem) {
-	value_t a_press = 3;
-	value_t b_press = 1;
-
-	// m*ax + n*bx = x
-	// m*ay + n*by = y
-	// m = (sx * by - sy * bx) / (ax * by - ay * bx)	
-	// n = (sx - m * ax) / bx or n = (sy - m * ay) / by
-	double dm = ((problem.x  * problem.by) - (problem.y  * problem.bx)) 
-	         / ((problem.ax * problem.by) - (problem.ay * problem.bx));
-
-	double dn1 = (problem.x - dm * problem.ax) / problem.bx;
-	double dn2 = (problem.y - dm * problem.ay) / problem.by;
-
-	value_t m = (value_t)dm;
-	value_t n1 = (value_t)dn1;
-	value_t n2 = (value_t)dn2;
-
-	std::cout << "(" << problem.ax << "," << problem.ay << ") "
-				<< "(" << problem.bx << "," << problem.by << ") "
-				<< "(" << problem.x << "," << problem.y << ") ";
-
-	std::cout << " =" << m << "," << n1 << " or " << n2;
-	std::cout << std::endl;
-
-	if (   m * problem.ax + n1 * problem.bx == problem.x 
-		&& m * problem.ay + n1 * problem.by == problem.y) {
-		std::cout << "linear_a = " << a_press * m + b_press * n1 << "\n";
-
-		return a_press * m + b_press * n1;	
-	}
-
-	if (   m * problem.ax + n2 * problem.bx == problem.x 
-		&& m * problem.ay + n2 * problem.by == problem.y) {
-		std::cout << "linear_b = " << a_press * m + b_press * n2 << "\n";
-		return a_press * m + b_press * n2;
-	}
-
-	std::cout << "linear = 0\n";
-	return 0;
-}
-
-
+/* solve as system of linear equations */
 value_t solve_linear(problem_t &problem) {
-	value_t a_press = 3;
-	value_t b_press = 1;
+	value_t a_cost = 3;	// cost to press a
+	value_t b_cost = 1;	// cost to press b
 
 	// m*ax + n*bx = x
 	// m*ay + n*by = y
 	// m = (sx * by - sy * bx) / (ax * by - ay * bx)	
-	// n = (sx - m * ax) / bx or n = (sy - m * ay) / by
+	// will have two possible solutions for n, choose n1 over n2
+	// n = (sx - m * ax) / bx
+	// n = (sy - m * ay) / by
 
-	// (17,86) (84,37) (7870,6450)
 	value_t ax = problem.ax;
 	value_t ay = problem.ay;
 	value_t bx = problem.bx;
@@ -84,20 +43,21 @@ value_t solve_linear(problem_t &problem) {
 	value_t m = ((problem.x  * by) - (problem.y  * bx)) 
 	    	  / ((ax * by) - (ay * bx));
 
+	// if m is 0; swap the points
 	if (m == 0) {
 		ax = problem.bx;
 		ay = problem.by;
 		bx = problem.ax;
 		by = problem.ay;
-		a_press = 1;
-		b_press = 3;
+		a_cost = 1;
+		b_cost = 3;
 		m = ((problem.x  * by) - (problem.y  * bx)) 
-	    	  / ((ax * by) - (ay * bx));
+	      / ((ax * by) - (ay * bx));
 	}
 
+	// seems answer is always first solution
 	value_t n1 = (problem.x - m * ax) / bx;
-	value_t n2 = (problem.y - m * ay) / by;
-
+	// value_t n2 = (problem.y - m * ay) / by;
 
 	// std::cout << "(" << problem.ax << "," << problem.ay << ") "
 	// 			<< "(" << problem.bx << "," << problem.by << ") "
@@ -110,22 +70,20 @@ value_t solve_linear(problem_t &problem) {
 		&& m * ay + n1 * by == problem.y) {
 		// std::cout << "linear_a = " << a_press * m + b_press * n1 << "\n";
 
-		return a_press * m + b_press * n1;	
+		return a_cost * m + b_cost * n1;	
 	}
 
-	if (   m * ax + n2 * bx == problem.x 
-		&& m * ay + n2 * by == problem.y) {
-		// std::cout << "linear_b = " << a_press * m + b_press * n2 << "\n";
-		return a_press * m + b_press * n2;
-	}
+	// if (   m * ax + n2 * bx == problem.x 
+	// 	&& m * ay + n2 * by == problem.y) {
+	// 	std::cout << "linear_b = " << a_cost * m + b_cost * n2 << "\n";
+	// 	return a_cost * m + b_cost * n2;
+	// }
 
 	// std::cout << "linear = 0\n";
 	return 0;
 }
 
-
-
-/* Brute force */
+/* solve using brute force -- expensive! */
 value_t solve_brute_force(problem_t &problem) {
 	value_t a_press = 3;
 	value_t b_press = 1;
@@ -185,18 +143,18 @@ long part1(const data_collection_t data) {
 	}
 
 	for (auto problem : problems) {
-		value_t brute = solve_brute_force(problem);
+		// value_t brute = solve_brute_force(problem);
 		value_t linear = solve_linear(problem);
 
-		solution += brute;
+		solution += linear;
 
-		if (verbose > 1 || brute != linear) {
-			std::cout << "(" << problem.ax << "," << problem.ay << ") "
-					<< "(" << problem.bx << "," << problem.by << ") "
-					<< "(" << problem.x << "," << problem.y << ") "
-					<< brute << "," << linear
-					<< std::endl;
-		}
+		// if (verbose > 1 || brute != linear) {
+		// 	std::cout << "(" << problem.ax << "," << problem.ay << ") "
+		// 			<< "(" << problem.bx << "," << problem.by << ") "
+		// 			<< "(" << problem.x << "," << problem.y << ") "
+		// 			<< brute << "," << linear
+		// 			<< std::endl;
+		// }
 
 		// std::cout << std::endl;
 	}
@@ -214,21 +172,12 @@ Button B: X+84, Y+14
 Prize: X=9612, Y=4342
 */
 // 297110000000000000 too high
+// 875318608908 too low used wrong input
+// 94955433618919
 
 long part2(const data_collection_t data) {
 	value_t solution = 0;
 	std::vector<problem_t> problems;
-
-	// problem_t p;
-	// p.ax = 45;
-	// p.ay = 76;
-	// p.bx = 84;
-	// p.by = 14;
-	// p.x = 9612;
-	// p.y = 4342;
-	// solve_brute_force(p);
-	// solve_linear(p);
-
 
 	problem_t problem;
 	std::cmatch match;
@@ -253,7 +202,6 @@ long part2(const data_collection_t data) {
 	for (auto problem : problems) {
 		// auto cost = solve_brute_force(problem);
 		auto cost = solve_linear(problem);
-
 		solution += cost;
 
 		if (verbose > 1) {

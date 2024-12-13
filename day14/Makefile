@@ -24,8 +24,7 @@ OBJECTS = $(patsubst %.cpp, %.o, $(wildcard *.cpp)) \
 endif
 
 # C Preprocessor flags (for c and c++ code)
-#CPPFLAGS = -g -Wall -Weffc++ -Wextra -Wconversion -Wsign-conversion -Werror -Wpedantic
-CPPFLAGS = -g -Wall -Weffc++ -Wextra  -Werror -Wpedantic
+CPPFLAGS = -g -Wall -Weffc++ -Wextra -Wconversion -Wsign-conversion -Werror -Wpedantic
 
 # C specific flags
 CC = gcc
@@ -70,9 +69,9 @@ lint: $(SOURCES)
 
 test: $(TARGET)
 	@-/bin/echo -n "$(DAY) "
-	@-./$(TARGET) -v -s 480 -g 875318608908 test.txt || true
+	@-./$(TARGET) -v -s 1 -g 2 test.txt || true
 	@-/bin/echo -n "$(DAY) "
-	@-./$(TARGET) -v -s 29711 -g 94955433618919 input.txt || true
+	@-./$(TARGET) -v -s 1 -g 2 input.txt || true
 
 clean:
 	-rm -f *.o

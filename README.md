@@ -30,7 +30,8 @@ Contains my solutions to the [Advent of Code 2024](https://adventofcode.com/2024
 - [Day 10: Hoof It](https://adventofcode.com/2024/day10) -- [solution](./day10)
 - [Day 11: Plutonian Pebbles](https://adventofcode.com/2024/day11) -- [solution](./day11)
 - [Day 12: Garden Groups](https://adventofcode.com/2024/day12) -- [solution](./day12)
-- [Day 13: ](https://adventofcode.com/2024/day13) -- [solution](./day13)
+- [Day 13: Claw Contraption](https://adventofcode.com/2024/day13) -- [solution](./day13)
+- [Day 14: ](https://adventofcode.com/2024/day14) -- [solution](./day14)
 
 ## NOTES
 
