@@ -7,15 +7,14 @@
 #include <unordered_set>
 #include <unordered_map>
 
-using index_t = long;
-using value_t = size_t;
-
 #include "charmap.h"
 #include "aoc2024.h"
 #include "solution.h"
 
-using point_t = size_t;
 
+using index_t = long;
+using value_t = size_t;
+using point_t = size_t;
 
 struct pt_t {
 	index_t x;

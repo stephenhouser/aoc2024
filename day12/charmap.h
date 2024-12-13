@@ -30,12 +30,24 @@ struct charmap_t {
 			&& 0 <= y && y < this->size_y;
 	}
 
+	bool is_valid(size_t x, size_t y) const {
+		return is_valid(static_cast<long>(x), static_cast<long>(y));
+	}
+
 	char get(long x, long y) const {
 		return this->is_valid(x, y) ? data[(size_t)y][(size_t)x] : '\0';
 	}
 
+	char get(size_t x, size_t y) const {
+		return get(static_cast<size_t>(y), static_cast<size_t>(x));
+	}
+
 	bool is_char(long x, long y, char c) const {
 		return is_valid(x, y) && data[(size_t)y][(size_t)x] == c;
+	}
+
+	bool is_char(size_t x, size_t y, char c) const {
+		return is_char(static_cast<size_t>(y), static_cast<size_t>(x), c);
 	}
 
 };
