@@ -50,14 +50,14 @@ struct std::hash<pt_t> {
 
 
 // cheesy "hash" of node location and direction
-point_t make_point(long x, long y) {
+point_t make_point(int x, int y) {
 	point_t hash = ((size_t)x  & 0xFFFFFFFF) << 32
 				 | ((size_t)y  & 0xFFFFFFFF);
 
 	return hash;
 }
 
-std::tuple<long, long>unmake_point(point_t p) {
+std::tuple<int, int>unmake_point(point_t p) {
 	return {
 		(p >> 32) & 0xFFFFFFFF,
 		(p      ) & 0xFFFFFFFF
@@ -71,14 +71,14 @@ struct region_t {
 	std::unordered_set<point_t> points{};
 	std::unordered_map<point_t, long> neighbors{};
 
-	void add(long x, long y, int boundaries) {
+	void add(int x, int y, int boundaries) {
 		perimeter += boundaries;
 		area += 1;
 		points.insert(make_point(x, y));
 		neighbors[make_point(x, y)] = boundaries;
 	}
 
-	bool remove(long x, long y) {
+	bool remove(int x, int y) {
 		auto point_it = points.find(make_point(x, y));
 		if (point_it != points.end()) {
 			points.erase(point_it);
@@ -89,23 +89,23 @@ struct region_t {
 		return false;
 	}
 
-	std::tuple<long, long> pop() {
+	std::tuple<int, int> pop() {
 		auto point = unmake_point(points.extract(points.begin()).value());
 		return point;
 	}
 
-	std::tuple<long, long> first() {
+	std::tuple<int, int> first() {
 		auto point = unmake_point(*points.begin());
 		return point;
 	}
 
-	bool contains(long x, long y) {
+	bool contains(int x, int y) {
 		return points.find(make_point(x, y)) != points.end();
 	}
 };
 
 
-bool same_region(index_t x, index_t y, const region_t &region, const charmap_t &map) {
+bool same_region(int x, int y, const region_t &region, const charmap_t &map) {
 	if (!map.is_valid(x, y)) {
 		return false;
 	}
@@ -129,8 +129,8 @@ long part1(const data_collection_t map) {
 
 	// make a region map from the charmap
 	region_t all;
-	for (index_t y = 0; y < map.size_y; ++y) {
-		for (index_t x = 0; x < map.size_x; ++x) {
+	for (int y = 0; y < map.size_y; ++y) {
+		for (int x = 0; x < map.size_x; ++x) {
 			all.add(x, y, 0);
 		}
 	}
@@ -157,7 +157,7 @@ long part1(const data_collection_t map) {
 
 			// std::cout << "TENT:" << tentnative.points.size() << ":" << x << "," << y << "="<< region.crop << std::endl;
 
-			std::vector<std::tuple<long, long>> dirs = {{0, -1}, {0, 1}, {-1, 0}, {1, 0}};
+			std::vector<std::tuple<int, int>> dirs = {{0, -1}, {0, 1}, {-1, 0}, {1, 0}};
 			for (auto [dx, dy] : dirs) {
 				auto c_x = x + dx;
 				auto c_y = y + dy;
@@ -178,7 +178,7 @@ long part1(const data_collection_t map) {
 	for (const auto &r : regions) {
 		auto s = r.area * r.perimeter;
 		solution += s;
-		if (verbose > 1) {
+		if (verbose > 2) {
 			std::cout << "crop=" << r.crop 
 					<< " area=" << r.area 
 					<< " perimeter=" << r.perimeter 
@@ -189,7 +189,7 @@ long part1(const data_collection_t map) {
 	return solution;
 }
 
-int os_corners(long x, long y, region_t &region) {
+int os_corners(int x, int y, region_t &region) {
 	//NE, SE, SW, NW
 	int corners = 0;
 	if (!region.contains(x, y-1) && !region.contains(x+1, y)) {
@@ -208,7 +208,7 @@ int os_corners(long x, long y, region_t &region) {
 	return corners;
 }
 
-int is_corners(long x, long y, region_t &region) {
+int is_corners(int x, int y, region_t &region) {
 	//NE, SE, SW, NW
 	int corners = 0;
 	if (region.contains(x, y-1) && region.contains(x+1, y) && !region.contains(x+1, y-1)) {
@@ -239,8 +239,8 @@ long part2([[maybe_unused]] const data_collection_t map) {
 
 	// make a region map from the charmap
 	region_t all;
-	for (index_t y = 0; y < map.size_y; ++y) {
-		for (index_t x = 0; x < map.size_x; ++x) {
+	for (int y = 0; y < map.size_y; ++y) {
+		for (int x = 0; x < map.size_x; ++x) {
 			all.add(x, y, 0);
 		}
 	}
@@ -267,7 +267,7 @@ long part2([[maybe_unused]] const data_collection_t map) {
 
 			// std::cout << "TENT:" << tentnative.points.size() << ":" << x << "," << y << "="<< region.crop << std::endl;
 
-			std::vector<std::tuple<long, long>> dirs = {{0, -1}, {0, 1}, {-1, 0}, {1, 0}};
+			std::vector<std::tuple<int, int>> dirs = {{0, -1}, {0, 1}, {-1, 0}, {1, 0}};
 			for (auto [dx, dy] : dirs) {
 				auto c_x = x + dx;
 				auto c_y = y + dy;
@@ -295,7 +295,7 @@ long part2([[maybe_unused]] const data_collection_t map) {
 			corn += os_corners(x, y, r);
 			corn += is_corners(x, y, r);
 
-			if (verbose > 1) {
+			if (verbose > 2) {
 				std::cout << "\t" << x << "," << y << "=" 
 						<< corn << std::endl;
 			}

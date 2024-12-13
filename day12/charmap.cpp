@@ -8,19 +8,19 @@ std::ostream& operator<<(std::ostream& os, const charmap_t &map) {
 	std::ostringstream buffer;
 
 	os << "   ";
-	for (size_t x = 0; x < (size_t)map.size_x; ++x) {
+	for (int x = 0; x < map.size_x; ++x) {
 		os << x % 10;
 	}
 	os << "\n";
 
 	os << "-+-";
-	for (size_t x = 0; x < (size_t)map.size_x; ++x) {
+	for (int x = 0; x < map.size_x; ++x) {
 		os << "-";
 	}
 	os << "-+-\n";
 
 
-	size_t y = 0;
+	int y = 0;
 	for (auto yit = map.data.begin(); yit != map.data.end(); ++yit) {
 		os << y % 10 << "| ";
 

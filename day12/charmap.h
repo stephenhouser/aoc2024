@@ -4,12 +4,9 @@
 #include <string>		// std::string
 #include <vector>		// std::vector
 
-// using index_t = long;
-// using value_t = long;
-
 struct charmap_t {
-	long size_x = 0;
-	long size_y = 0;
+	int size_x = 0;
+	int size_y = 0;
 
 	std::vector<std::vector<char>> data = {};
 
@@ -19,35 +16,35 @@ struct charmap_t {
 			this->data.push_back(map_row);
 		}
 
-		size_y = (long)this->data.size();
-		if (size_y) {
-			size_x = (long)this->data[0].size();
+		this->size_y = static_cast<int>(this->data.size());
+		if (this->size_y) {
+			this->size_x = static_cast<int>(this->data[0].size());
 		}
 	}
 
-	bool is_valid(long x, long y) const {
+	bool is_valid(int x, int y) const {
 		return 0 <= x && x < this->size_x
 			&& 0 <= y && y < this->size_y;
 	}
 
 	bool is_valid(size_t x, size_t y) const {
-		return is_valid(static_cast<long>(x), static_cast<long>(y));
+		return is_valid(static_cast<int>(x), static_cast<int>(y));
 	}
 
-	char get(long x, long y) const {
+	char get(int x, int y) const {
 		return this->is_valid(x, y) ? data[(size_t)y][(size_t)x] : '\0';
 	}
 
 	char get(size_t x, size_t y) const {
-		return get(static_cast<size_t>(y), static_cast<size_t>(x));
+		return get(static_cast<int>(y), static_cast<int>(x));
 	}
 
-	bool is_char(long x, long y, char c) const {
+	bool is_char(int x, int y, char c) const {
 		return is_valid(x, y) && data[(size_t)y][(size_t)x] == c;
 	}
 
 	bool is_char(size_t x, size_t y, char c) const {
-		return is_char(static_cast<size_t>(y), static_cast<size_t>(x), c);
+		return is_char(static_cast<int>(y), static_cast<int>(x), c);
 	}
 
 };
