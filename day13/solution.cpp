@@ -8,7 +8,7 @@
 #include "aoc2024.h"
 #include "solution.h"
 
-using value_t = unsigned long long;
+using value_t = long long;
 
 struct problem_t {
 	value_t ax = 0;
@@ -23,8 +23,25 @@ std::regex a_regex("Button A: X\\+(\\d+), Y\\+(\\d+)");
 std::regex b_regex("Button B: X\\+(\\d+), Y\\+(\\d+)");
 std::regex s_regex("Prize: X=(\\d+), Y=(\\d+)");
 
-/* solve as system of linear equations */
 value_t solve_linear(problem_t &problem) {
+	value_t a_cost = 3;	// cost to press a
+	value_t b_cost = 1;	// cost to press b
+
+	// https://byjus.com/jee/system-of-linear-equations-using-determinants/
+	value_t d1 = problem.by * problem.x - problem.bx * problem.y;
+	value_t d2 = -problem.ay * problem.x + problem.ax * problem.y;
+	value_t d  = (problem.ax * problem.by) - (problem.ay * problem.bx);
+
+	if (d == 0 || d1 % d != 0 || d2 % d != 0) {
+		return 0;	// inconsistent system
+	}
+
+	return a_cost * (d1/d) + b_cost * (d2/d);
+}
+
+
+/* solve as system of linear equations */
+value_t solve_linear_first(problem_t &problem) {
 	value_t a_cost = 3;	// cost to press a
 	value_t b_cost = 1;	// cost to press b
 
