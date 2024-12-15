@@ -3,7 +3,7 @@ MAKEFLAGS += --silent
 .PHONY: all clean
 
 all:
-	for n in day*; do (cd $$n; make test); done
+	for n in day[012][0-9]; do (cd $$n; make test); done
 
 clean:
-	for n in day*; do (cd $$n; make distclean); done
+	for n in day[012][0-9]; do (cd $$n; make distclean); done
