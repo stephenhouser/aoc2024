@@ -5,52 +5,13 @@
 #include <regex>		// std::regex regular expressions
 #include <numeric>		// std::accumulate
 #include <unordered_set>
+#include <unordered_map>
+#include <optional>
 
+#include "point.h"
 #include "charmap.h"
 #include "aoc2024.h"
 #include "solution.h"
-
-bool show = false;
-
-using index_t = int;
-using value_t = size_t;
-
-struct point_t {
-	index_t x = 0;
-	index_t y = 0;
-
-	point_t(index_t x, index_t y) {
-		this->x = x;
-		this->y = y;
-	}
-
-	/* closest to 0 with preference towards closer x */
-	bool operator<(const point_t &other) const {		
-		if (this->y < other.y) {
-			return true;
-		}
-
-		return this->x < other.x;
-	}
-
-	bool operator==(const point_t &other) const {
-		return this->x == other.x && this->y == other.y;
-	}
-};
-
-std::ostream& operator<<(std::ostream& os, const point_t &p) {
-	std::ostringstream buffer;
-	os << "(" << p.x << "," << p.y << ")";
-	return os;
-}
-
-/* hash function so can be put in unordered_map or set */
-template <>
-struct std::hash<point_t> {
-	size_t operator()(const point_t &p) const {
-		return std::hash<size_t>()((((size_t)p.x & 0xFFFFFFFF) << 32) | ((size_t)p.y & 0xFFFFFFFF));
-	}
-};
 
 bool can_move(int x, int y, int dx, int dy, const charmap_t &map) {
 	// off map
@@ -81,32 +42,19 @@ void push_boxes(int x, int y, int dx, int dy, charmap_t &map) {
 	map.set(x+dx, y+dy, '.');
 }
 
+std::unordered_map<char, std::tuple<int, int>> directions = {
+	{'^', {  0, -1}},
+	{'v', {  0,  1}},
+	{'<', { -1,  0}},
+	{'>', {  1,  0}},
+};
+
 void move_robot(std::pair<int, int> &robot, char dir_char, charmap_t &map) {
-	int dx = 0;
-	int dy = 0;
-	switch (dir_char) {
-		case '^':
-			dx = 0;
-			dy = -1;
-			break;
-
-		case '>':
-			dx = 1;
-			dy = 0;
-			break;
-
-		case '<':
-			dx = -1;
-			dy = 0;
-			break;
-		case 'v':
-			dx = 0;
-			dy = 1;
-			break;
-	}
+	auto [dx, dy] = directions[dir_char];
 
 	if (can_move(robot.first, robot.second, dx, dy, map)) {
 		push_boxes(robot.first, robot.second, dx, dy, map);
+
 		map.set(robot.first, robot.second, '.');
 		robot.first += dx;
 		robot.second += dy;
@@ -204,6 +152,71 @@ void move_boxes(std::unordered_set<point_t> boxes, int dx, int dy, charmap_t &ma
 	}
 }
 
+/* can we move what is in x,y to x+dx, x+dy*/
+std::optional<std::unordered_set<point_t>>
+will_move2(int x, int y, int dx, int dy, const charmap_t &map) {
+	std::unordered_set<point_t> to_move;
+
+	// std::cout << "check:" << x << "," << y << ":" << dx << "," << dy << std::endl;
+
+	if (map.is_char(x+dx, y+dy, '#')) {
+		return std::nullopt;
+	}
+
+	if (map.is_char(x+dx, y+dy, '.')) {
+		return to_move;
+	}
+
+	if (dy == 0) {
+		// horizontal
+		while (map.is_char(x+dx, y, '[') || map.is_char(x+dx, y, ']')) {
+			if (map.is_char(x+dx, y, '[')) {
+				point_t p(x+dx, y);
+				to_move.insert(p);
+			}
+
+			if (map.is_char(x+dx, y, '#')) {
+				return std::nullopt;
+			}
+
+			x += dx;
+		}
+		return to_move;
+	} else {
+		// align x to left side of box
+		if (map.is_char(x, y+dy, ']')) {
+			x--;
+		}
+
+		if (map.is_char(x, y+dy, '#') || map.is_char(x+1, y+dy, '#')) {
+ 			return std::nullopt;
+		}
+
+		if (map.is_char(x, y, '[') || map.is_char(x, y+dy, ']')) {
+			auto moves = will_move2(x, y+dy, dx, dy, map);
+			if (!moves.has_value()) {
+				return std::nullopt;
+			}
+
+			to_move.merge(moves.value());
+		} 
+		
+		if (map.is_char(x+1, y, ']') || map.is_char(x+1, y+dy, '[')) {
+			auto moves = will_move2(x+1, y+dy, dx, dy, map);
+			if (!moves.has_value()) {
+				return std::nullopt;
+			}
+
+			to_move.merge(moves.value());
+		}
+	}
+
+	point_t p(x+dx, y+dy);
+	to_move.insert(p);
+	return to_move;
+}
+
+
 std::unordered_set<point_t> will_move(int x, int y, int dx, int dy, const charmap_t &map) {
 	std::unordered_set<point_t> to_move;
 
@@ -238,104 +251,82 @@ std::unordered_set<point_t> will_move(int x, int y, int dx, int dy, const charma
 	return to_move;
 }
 
-
+/* can we push what is at x,y to x+dx, y+dy */
 bool can_move_big(int x, int y, int dx, int dy, const charmap_t &map) {
-	if (show) 
-		std::cout << "\tcan (" << x << "," << y << ")=" << map.get(x, y)
-	    	      << " (" << dx << "," << dy << ")=" << map.get(x+dx, y+dy) ;
+	if (map.is_char(x+dx, y+dy, '.')) {
+		return true;
+	}
+
+	if (map.is_char(x+dx, y+dy, '#')) {
+		return false;
+	}
+
 
 	if (dy == 0) {
 		// horizontal
 		while (map.is_char(x+dx, y, '[') || map.is_char(x+dx, y, ']')) {
-			// std::cout << "\tcan (" << x << "," << y << ") dx " << dx << " = " << map.get(x+dx, y) << std::endl;
 			x += dx;
 		}
-		bool can = map.is_char(x+dx, y, '.');
-		if (show) std::cout << can << std::endl;
-		return can;
+		return map.is_char(x+dx, y, '.');
 	} else {
 		// vertical
-		if (map.is_char(x, y+dy, '.')) {
-			if (show) std::cout << " TRUE" << std::endl;
-			return true;
-		}
-
-		if (map.is_char(x, y+dy, '#')) {
-			if (show) std::cout << " FALSE" << std::endl;
-			return false;
-		}
 
 		// align x to left side of box
 		if (map.is_char(x, y+dy, ']')) {
 			x--;
 		}
 
-		bool can = can_move_big(x, y+dy, dx, dy, map) && can_move_big(x+1, y+dy, dx, dy, map);
-		if (show) std::cout << can << std::endl;
-		return can;
+		return can_move_big(x, y+dy, dx, dy, map) && can_move_big(x+1, y+dy, dx, dy, map);
 	}
 }
 
 
-void move_robot_big(std::pair<int, int> &robot, char dir_char, charmap_t &map) {
-	int dx = 0;
-	int dy = 0;
-	switch (dir_char) {
-		case '^':
-			dx = 0;
-			dy = -1;
-			break;
+void move_robot_big(point_t &robot, char dir_char, charmap_t &map) {
+	auto [dx, dy] = directions[dir_char];
 
-		case '>':
-			dx = 1;
-			dy = 0;
-			break;
+	if (can_move_big(robot.x, robot.y, dx, dy, map)) {
+		std::unordered_set<point_t> mv = will_move(robot.x+dx, robot.y+dy, dx, dy, map);
+	// auto moves = will_move2(robot.x, robot.y, dx, dy, map);
+	// if (moves.has_value()) {
+	// 	std::cout << "\tmoves[" << dir_char << "]";
+	// 	for (auto m : moves.value()) {
+	// 		std::cout << m << " ";
+	// 	}
+	// 	std::cout << std::endl;
 
-		case '<':
-			dx = -1;
-			dy = 0;
-			break;
-		case 'v':
-			dx = 0;
-			dy = 1;
-			break;
-	}
-
-	if (can_move_big(robot.first, robot.second, dx, dy, map)) {
-		std::unordered_set<point_t> mv = will_move(robot.first+dx, robot.second+dy, dx, dy, map);
 		move_boxes(mv, dx, dy, map);
 
-		map.set(robot.first, robot.second, '.');
-		robot.first += dx;
-		robot.second += dy;
-		map.set(robot.first, robot.second, '@');
+		map.set(robot.x, robot.y, '.');
+		robot.x += dx;
+		robot.y += dy;
+		map.set(robot.x, robot.y, '@');
 	}
 }
 
 
-long part2([[maybe_unused]] const data_collection_t data) {
+long part2(const data_collection_t data) {
 
 	auto &[small_map, directions] = data;
 	charmap_t map(embiggen(small_map));
 
-	std::pair<int, int> robot = map.find_char('@');
+	point_t robot(map.find_char('@'));
 
 	if (verbose > 2) {
-		std::cout << robot.first << "," << robot.second << std::endl;
+		std::cout << robot << std::endl;
 		std::cout << map;
 	}
 
 	for (auto direction : directions) {
 		move_robot_big(robot, direction, map);
-		
+
 		if (verbose > 3) {
-			std::cout << " " << robot.first << "," << robot.second << std::endl;
+			std::cout << robot << std::endl;
 			std::cout << map;
 		}
 	}
 
 	if (verbose > 1) {
-		std::cout << " " << robot.first << "," << robot.second << std::endl;
+		std::cout << robot << std::endl;
 		std::cout << map;
 	}
 
