@@ -6,6 +6,7 @@
 #include <iostream>		// cout
 #include <iomanip>		// setw and setprecision on output
 
+#include "charmap.h"
 #include "aoc2024.h"
 #include "solution.h"
 
@@ -70,7 +71,7 @@ const std::vector<std::string> read_lines(const std::string &path) {
 }
 
 int part_wrapper(int part_n, long solution, const std::string &path) {
-    int success = 1;
+    int success = 0;
     if (solution >= 0) { // 0 <= solution, run the code...
         auto data = read_data(path);
 
@@ -80,7 +81,6 @@ int part_wrapper(int part_n, long solution, const std::string &path) {
 
         if (0 < solution) { // 0 < solution, check the answer
             success = (answer == solution) ? 1 : 0;
-        }
 
             if (verbose) {
                 if (part_n == 1 && answer == solution) {
@@ -93,7 +93,7 @@ int part_wrapper(int part_n, long solution, const std::string &path) {
                     std::cout << "  gold=  ";
                 }
             }
-        // }
+        }
 
         std::cout << std::setw(answer_width) << std::left 
                   << answer << "\033[0m";
