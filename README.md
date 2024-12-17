@@ -19,21 +19,71 @@ Contains my solutions to the [Advent of Code 2024](https://adventofcode.com/2024
 
 - Day 0: Template -- [solution](./day00)
 - [Day 1: Historian Hysteria](https://adventofcode.com/2024/day/1) -- [solution](./day01)
+
+    List processing, Sorting. Sort two lists of numbers, find sum of differences, how many times does each number from first appear in second.
+
 - [Day 2: Red-Nosed Reports](https://adventofcode.com/2024/day/2) -- [solution](./day02)
+
+    List processing, check list for valid sequece (safe/unsafe); can tolerate single error (parity)?
+
 - [Day 3: Mull It Over](https://adventofcode.com/2024/day3) -- [solution](./day03)
+
+    List processing, Simulation, Regex. Simulated computer that mul(), do(), and don't()
+
 - [Day 4: Ceres Search](https://adventofcode.com/2024/day4) -- [solution](./day04)
+
+    Search. Search grid for XMAS; Search for diagoanl MAS.
+
 - [Day 5: Print Queue](https://adventofcode.com/2024/day5) -- [solution](./day05)
+
+    Topographical Sorting. Series of rules that numbers need to be arranged by find good and bad ones; reorder to be correct.
+
 - [Day 6: Guard Gallivant](https://adventofcode.com/2024/day6) -- [solution](./day06)
+
+    Pathfinding, Search. Guard moves around count spaces they walk on; find spaces to force guard into a loop.
+
 - [Day 7: Bridge Repair](https://adventofcode.com/2024/day7) -- [solution](./day07)
+
+    Math, List processing. Solve series of equations figure out where to * and where to +; adds concatenation operator.
+
 - [Day 8: Resonant Collinearity](https://adventofcode.com/2024/day8) -- [solution](./day08)
+
+    Geometry. Series of antennas, need to find resonant nodes; find multiple resonant nodes.
+
 - [Day 9: Disk Fragmenter](https://adventofcode.com/2024/day9) -- [solution](./day09)
+
+    Disk defragmentation by splitting files to earlier space; must move files as whole block, cannot split.
+
 - [Day 10: Hoof It](https://adventofcode.com/2024/day10) -- [solution](./day10)
+
+    Pathfinding. Find paths on map from 0 to 9 ascending numbers; find number of trails attached to each starting location.
+
 - [Day 11: Plutonian Pebbles](https://adventofcode.com/2024/day11) -- [solution](./day11)
+
+    Series of stones that change, multiply, and divide, how many do you have after 25 units; how many after 75?
+
 - [Day 12: Garden Groups](https://adventofcode.com/2024/day12) -- [solution](./day12)
+
+    Flood fill. Find regions (garden plots) on map, calculate perimiter * area; calculate number of unique walls.
+
 - [Day 13: Claw Contraption](https://adventofcode.com/2024/day13) -- [solution](./day13)
+
+    Math. Two buttons on a claw machine, find optimal press of each to get prize; add 10,000,000,000,000 to each prize location.
+
 - [Day 14: Restroom Redoubt](https://adventofcode.com/2024/day14) -- [solution](./day14)
+
+    Math, Simulation. Robots traveling on vectors, simulate for 100 seconds; simulate until you see a christmas tree.
+
 - [Day 15: Warehouse Woes](https://adventofcode.com/2024/day15) -- [solution](./day15)
-- [Day 16: ](https://adventofcode.com/2024/day16) -- [solution](./day16)
+
+    Simulation. Robot moves around pushing boxes; boxes get 2x as big and you can push from one side.
+
+- [Day 16: Reindeer Maze](https://adventofcode.com/2024/day16) -- [solution](./day16)
+
+    Dijkstra's. find shortest path with penalty for turns; find all tiles on all shortest paths.
+
+- [Day 17: ](https://adventofcode.com/2024/day17) -- [solution](./day17)
+
 
 ## NOTES
 
