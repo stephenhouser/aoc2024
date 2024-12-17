@@ -70,11 +70,11 @@ lint: $(SOURCES)
 
 test: $(TARGET)
 	@-/bin/echo -n "$(DAY) "
-	@-./$(TARGET) -v -s 7036 -g 2 test.txt || true
+	@-./$(TARGET) -v -s 7036 -g 45 test.txt || true
 	@-/bin/echo -n "$(DAY) "
-	@-./$(TARGET) -v -s 11048 -g 2 test-2.txt || true
+	@-./$(TARGET) -v -s 11048 -g 64 test-2.txt || true
 	@-/bin/echo -n "$(DAY) "
-	@-./$(TARGET) -v -s 83444 -g 2 input.txt || true
+	@-./$(TARGET) -v -s 83444 -g 483 input.txt || true
 
 clean:
 	-rm -f *.o
