@@ -6,7 +6,6 @@
 #include <iostream>		// cout
 #include <iomanip>		// setw and setprecision on output
 
-#include "charmap.h"
 #include "aoc2024.h"
 #include "solution.h"
 
@@ -26,6 +25,21 @@ const std::vector<std::string> split(const std::string &str, const std::string &
     token = strtok(str_c, delim.c_str()); 
     while (token != NULL) { 
         tokens.push_back(std::string(token));  
+        token = strtok(NULL, delim.c_str()); 
+    }
+
+    free(str_c);
+    return tokens;
+}
+
+const std::vector<int> split_int(const std::string &str, const std::string &delim) {
+    std::vector<int> tokens;
+    char *str_c { strdup(str.c_str()) };
+    char *token { NULL };
+
+    token = strtok(str_c, delim.c_str()); 
+    while (token != NULL) { 
+        tokens.push_back(atoi(token));  
         token = strtok(NULL, delim.c_str()); 
     }
 
