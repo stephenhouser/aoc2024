@@ -12,6 +12,8 @@
 #include "aoc2024.h"
 #include "solution.h"
 
+bool test_file = true;
+
 
 std::vector<point_t> directions = {{0, 1}, {1, 0}, {0, -1}, {-1, 0}};
 
@@ -28,30 +30,65 @@ void populate_map(charmap_t &map, const std::vector<point_t> &points, size_t max
 
 
 long part1([[maybe_unused]]const data_collection_t data) {
-	long solution = 1;
-
 	point_t start(0, 0);
-	// point_t end(6, 6);
 	point_t end(70, 70);
+	size_t time_steps = 1024;
 
-	// std::cout << data << std::endl;
+	if (test_file) {
+		end = {6, 6};
+		time_steps = 12;
+	}
+
 	charmap_t map((size_t)end.x+1, (size_t)end.y+1);
-	populate_map(map, data, 1024);
+	populate_map(map, data, time_steps);
 
-	auto [distance, dist, pred] = dijkstra(map, start, start, end);
+	auto [solution, dist, pred] = dijkstra(map, start, start, end);
 
-	std::cout << map;
-	std::cout << distance << " steps" << std::endl;
+	if (verbose > 1) {
+		std::cout << map;
+		std::cout << solution << " steps" << std::endl;
+	}
 
-	return solution;
+	return (long)solution;
 }
 
+// this works but is slow (few seconds)
+// faster would be to only recalculate if dropped tile lands on existing shortest path
+// then re-dijkstra
 long part2([[maybe_unused]] const data_collection_t data) {
-	long solution = 2;
+	size_t solution_time = 0;
 
-	// TODO: part 2 code here
+	point_t start(0, 0);
+	point_t end(70, 70);
 
-	return solution;
+	if (test_file) {
+		end = {6, 6};
+	}
+
+	charmap_t map((size_t)end.x+1, (size_t)end.y+1);
+	for (size_t time = 0; time < data.size(); time++) {
+		auto pt = data[time];
+		map.set(pt.x, pt.y, '#');
+
+		if (time > 1024) {
+			auto [distance, dist, pred] = dijkstra(map, start, start, end);
+			if (distance == INT_MAX) {
+				solution_time = time;
+				break;
+			}
+		}
+	}
+
+	if (verbose > 1) {
+		std::cout << map;
+		std::cout << "at time " << solution_time << " block " << data[solution_time] << std::endl;
+	}
+
+	if (solution_time) {		
+		return data[solution_time].x * 100 + data[solution_time].y;
+	}
+
+	return 0;
 }
 
 /* Read data from path and return a vector for each line in the file. */
