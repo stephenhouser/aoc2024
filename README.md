@@ -84,7 +84,7 @@ Contains my solutions to the [Advent of Code 2024](https://adventofcode.com/2024
 
 - [Day 17: Chronospatial Computer](https://adventofcode.com/2024/day17) -- [solution](./day17)
 
-    Simulation, Pattern, Math. Simulate a simple computer determine output; find when output matches instruction set (repeating patterns).
+    Simulation, Pattern, Math. Simulate a simple computer determine output; find when output matches instruction set (repeating patterns). Refined second part with octal search.
 
 - [Day 18: ](https://adventofcode.com/2024/day18) -- [solution](./day18)
 
