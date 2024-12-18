@@ -191,57 +191,92 @@ size_t ipow(size_t base, size_t exp) {
     return result;
 }
 
-size_t find_digit(const cpu_t &cpu_initial, 
-				  const std::vector<int> &instructions, 
-				  int instruction) {
-	
-	size_t start = ipow(8, instruction);
-	size_t increment = ipow(8, instruction);
+size_t set_octal(size_t n, size_t octal, size_t digit) {
 
-	while (instruction >= 0) {
-		size_t check = start;
+	// std::cout << "    n " << std::oct << std::setfill('0') << std::setw(32)<< n << std::endl;
 
-		// std::cout << "instr=" << instruction << "=" << instructions[instruction]
-		// 		  << " start=" << start
-		// 		  << " check=" << check 
-		// 		  << " increment=" << increment 
-		// 		  << std::endl;
+	size_t value_mask = ~(0x7ul << (digit * 3));
+	// std::cout << "mask  " << std::oct << std::setfill('0') << std::setw(32) << value_mask << std::endl;
 
-		for (size_t a = 0; a < 108107572487440; a++) {
-			auto cpu(cpu_initial);
-			check = start + (increment * a);
-			cpu.a = check;
+	size_t clean_value = n & value_mask;
+	// std::cout << "clean " << std::oct << std::setfill('0') << std::setw(32)<< clean_value << std::endl;
 
-			auto output = simulate(cpu, instructions, instructions.size());
-			// std::cout << "\t" << output << std::endl;
+	size_t octal_value = (octal & 0x7ul) << (digit * 3);
+	// std::cout << "octal "<< std::oct << std::setfill('0') << std::setw(32) << octal_value << std::endl;
 
-			if (instruction == 0) {
-				if (output == instructions) {
-					// std::cout << "found @ " << check << " " << output << std::endl;
-					return check;
+	// std::cout.fill(' ');
+	// std::cout << std::dec;
+	return clean_value | octal_value;
+}
+
+long part2([[maybe_unused]] const data_collection_t data) {
+	long solution = 0;
+
+	auto [cpu_initial, instructions] = load_program(data);
+
+	std::vector<size_t> candidates;
+	candidates.push_back(0);
+
+	for (int instruction = (int)instructions.size() - 1; instruction >= 0; instruction--) {
+		if (verbose > 2) {
+			std::cout << "finding digit for " << instruction << "=" << instructions[instruction]
+					<< candidates.size() << " candidates: "
+					<< std::oct << std::setfill('0') << std::setw(16) << candidates
+					<< std::endl;
+		}
+
+		std::vector<size_t> new_candidates;
+		for (auto candidate : candidates) {
+			if (verbose > 3) {
+				std::cout << "candidate = " 
+						<< std::oct << std::setfill('0') << std::setw(16) << candidate << std::endl;
+			}
+
+			for (size_t digit = 0; digit < 8; digit++) {
+				auto cpu(cpu_initial);
+
+				solution = set_octal(candidate, digit, instruction);
+				cpu.a = solution;
+
+				auto output = simulate(cpu, instructions, instructions.size());
+
+				if (verbose > 3) {
+					std::cout << digit << " " 
+							<< std::oct << std::setfill('0') << std::setw(16) << solution << std::dec 
+							<< ": " << output;
 				}
-			} else if (output[instruction] == instructions[instruction]) {
-				while (output[instruction] == instructions[instruction]) {
-					// std::cout << "found @ " << check << " " << output << std::endl;
-					start = check;
-					increment /= 8;
-					instruction--;
+
+				if (output.size() == instructions.size() && output[instruction] == instructions[instruction]) {
+					if (verbose > 3) {
+						std::cout << " **";
+					}
+					new_candidates.push_back(solution);
 				}
 
-				break;
-				// return check;
+				if (verbose > 3) {
+					std::cout << std::endl;
+				}
 			}
 		}
 
-		// instruction--;
+		candidates.clear();
+		candidates.insert(candidates.begin(), new_candidates.begin(), new_candidates.end());
 	}
 
-	return 0;
+	std::sort(candidates.begin(), candidates.end(), std::greater<size_t>());
+	// std::cout << "correct=" << std::oct << 108107572487440 << std::dec << std::endl;
+	std::cout << "candidates=" << candidates.size() << ": " << std::dec << candidates << std::endl;
+	return candidates[0];
 }
+
+// 3045130135122420
+// 3000000000000000
+
 
 // 108107572487424 too low
 // 108107572487440
-long part2([[maybe_unused]] const data_collection_t data) {
+// 108107574778365 << correct
+long part2_works([[maybe_unused]] const data_collection_t data) {
 	long solution = 0;
 
 	auto [cpu_initial, instructions] = load_program(data);
@@ -263,8 +298,6 @@ long part2([[maybe_unused]] const data_collection_t data) {
 	// 8^16 281,474,976,710,656
 	// size_t len = 0;
 	// size_t last = 0;
-
-	// solution = find_digit(cpu_initial, instructions, (int)instructions.size()-1);	
 	// 105553116266496
 
 	int instruction = (int)instructions.size() - 1; 
@@ -317,11 +350,8 @@ long part2([[maybe_unused]] const data_collection_t data) {
 				}
 
 				break;
-				// return check;
 			}
 		}
-
-		// instruction--;
 	}
 
 	return solution;

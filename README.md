@@ -82,8 +82,11 @@ Contains my solutions to the [Advent of Code 2024](https://adventofcode.com/2024
 
     Dijkstra's. find shortest path with penalty for turns; find all tiles on all shortest paths.
 
-- [Day 17: ](https://adventofcode.com/2024/day17) -- [solution](./day17)
+- [Day 17: Chronospatial Computer](https://adventofcode.com/2024/day17) -- [solution](./day17)
 
+    Simulation, Pattern, Math. Simulate a simple computer determine output; find when output matches instruction set (repeating patterns).
+
+- [Day 18: ](https://adventofcode.com/2024/day18) -- [solution](./day18)
 
 ## NOTES
 
