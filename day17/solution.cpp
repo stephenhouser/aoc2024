@@ -2,10 +2,7 @@
 #include <iomanip>		// setw and setprecision on output
 #include <string>		// std::string
 #include <vector>		// std::vector
-#include <regex>		// std::regex regular expressions
-#include <numeric>		// std::accumulate
-#include <limits.h>
-// #include <cmath>
+#include <algorithm>	// std::sort
 
 #include "aoc2024.h"
 #include "solution.h"
@@ -33,10 +30,7 @@ std::ostream& operator<<(std::ostream& os, const cpu_t &cpu) {
 	return os;
 }
 
-
-
-std::tuple<cpu_t, std::vector<int>>
-load_program(const data_collection_t &data) {
+std::tuple<cpu_t, std::vector<int>> load_program(const data_collection_t &data) {
 	cpu_t cpu;
 	std::vector<int> instructions;
 
@@ -152,8 +146,8 @@ std::vector<int> simulate(cpu_t &cpu, const std::vector<int> &instructions, size
 }
 
 
-long part1(const data_collection_t data) {
-	long solution = 0;
+uint64_t part1(const data_collection_t data) {
+	uint64_t solution = 0;
 
 	auto [cpu, instructions] = load_program(data);
 
@@ -171,11 +165,61 @@ long part1(const data_collection_t data) {
 
 	// put answer into a single long for return, concatenate digits.
 	for (size_t i = 0; i < output.size(); i++) {
-		solution = solution * 10 + output[i];
+		solution = solution * 10 + static_cast<uint64_t>(output[i]);
 	}
 
 	return solution;
 }
+
+
+uint64_t set_octal(uint64_t n, uint64_t octal, uint64_t digit) {
+	uint64_t value_mask = ~(0x7ul << (digit * 3));
+	uint64_t clean_value = n & value_mask;
+	uint64_t octal_value = (octal & 0x7ul) << (digit * 3);
+	return clean_value | octal_value;
+}
+
+uint64_t part2(const data_collection_t data) {
+	uint64_t solution = 0;
+
+	auto [cpu_initial, instructions] = load_program(data);
+
+	std::vector<uint64_t> candidates;
+	candidates.push_back(0);
+
+	for (int instruction = (int)instructions.size() - 1; instruction >= 0; instruction--) {
+		uint64_t instruction_n = static_cast<uint64_t>(instruction);
+
+		std::vector<uint64_t> new_candidates;
+
+		for (auto candidate : candidates) {
+			for (uint64_t digit = 0; digit < 8; digit++) {
+				auto cpu(cpu_initial);
+
+				solution = set_octal(candidate, digit, instruction_n);
+				cpu.a = solution;
+
+				auto output = simulate(cpu, instructions, instructions.size());
+
+				if (output[instruction_n] == instructions[instruction_n] && output.size() == instructions.size()) {
+					new_candidates.push_back(solution);
+				}
+			}
+		}
+
+		candidates.clear();
+		candidates.insert(candidates.begin(), new_candidates.begin(), new_candidates.end());
+	}
+
+	if (candidates.size() > 1) {
+		std::sort(candidates.begin(), candidates.end(), std::less<uint64_t>());
+	}
+
+	return static_cast<uint64_t>(candidates[0]);
+}
+
+// slow original version, takes a long time but works.
+// newer fast version above
 
 size_t ipow(size_t base, size_t exp) {
     size_t result = 1;
@@ -191,93 +235,8 @@ size_t ipow(size_t base, size_t exp) {
     return result;
 }
 
-size_t set_octal(size_t n, size_t octal, size_t digit) {
-
-	// std::cout << "    n " << std::oct << std::setfill('0') << std::setw(32)<< n << std::endl;
-
-	size_t value_mask = ~(0x7ul << (digit * 3));
-	// std::cout << "mask  " << std::oct << std::setfill('0') << std::setw(32) << value_mask << std::endl;
-
-	size_t clean_value = n & value_mask;
-	// std::cout << "clean " << std::oct << std::setfill('0') << std::setw(32)<< clean_value << std::endl;
-
-	size_t octal_value = (octal & 0x7ul) << (digit * 3);
-	// std::cout << "octal "<< std::oct << std::setfill('0') << std::setw(32) << octal_value << std::endl;
-
-	// std::cout.fill(' ');
-	// std::cout << std::dec;
-	return clean_value | octal_value;
-}
-
-long part2([[maybe_unused]] const data_collection_t data) {
-	long solution = 0;
-
-	auto [cpu_initial, instructions] = load_program(data);
-
-	std::vector<size_t> candidates;
-	candidates.push_back(0);
-
-	for (int instruction = (int)instructions.size() - 1; instruction >= 0; instruction--) {
-		if (verbose > 2) {
-			std::cout << "finding digit for " << instruction << "=" << instructions[instruction]
-					<< candidates.size() << " candidates: "
-					<< std::oct << std::setfill('0') << std::setw(16) << candidates
-					<< std::endl;
-		}
-
-		std::vector<size_t> new_candidates;
-		for (auto candidate : candidates) {
-			if (verbose > 3) {
-				std::cout << "candidate = " 
-						<< std::oct << std::setfill('0') << std::setw(16) << candidate << std::endl;
-			}
-
-			for (size_t digit = 0; digit < 8; digit++) {
-				auto cpu(cpu_initial);
-
-				solution = set_octal(candidate, digit, instruction);
-				cpu.a = solution;
-
-				auto output = simulate(cpu, instructions, instructions.size());
-
-				if (verbose > 3) {
-					std::cout << digit << " " 
-							<< std::oct << std::setfill('0') << std::setw(16) << solution << std::dec 
-							<< ": " << output;
-				}
-
-				if (output.size() == instructions.size() && output[instruction] == instructions[instruction]) {
-					if (verbose > 3) {
-						std::cout << " **";
-					}
-					new_candidates.push_back(solution);
-				}
-
-				if (verbose > 3) {
-					std::cout << std::endl;
-				}
-			}
-		}
-
-		candidates.clear();
-		candidates.insert(candidates.begin(), new_candidates.begin(), new_candidates.end());
-	}
-
-	std::sort(candidates.begin(), candidates.end(), std::greater<size_t>());
-	// std::cout << "correct=" << std::oct << 108107572487440 << std::dec << std::endl;
-	std::cout << "candidates=" << candidates.size() << ": " << std::dec << candidates << std::endl;
-	return candidates[0];
-}
-
-// 3045130135122420
-// 3000000000000000
-
-
-// 108107572487424 too low
-// 108107572487440
-// 108107574778365 << correct
-long part2_works([[maybe_unused]] const data_collection_t data) {
-	long solution = 0;
+uint64_t part2_slow(const data_collection_t data) {
+	uint64_t solution = 0;
 
 	auto [cpu_initial, instructions] = load_program(data);
 
@@ -301,14 +260,14 @@ long part2_works([[maybe_unused]] const data_collection_t data) {
 	// 105553116266496
 
 	int instruction = (int)instructions.size() - 1; 
-	size_t start = ipow(8, instruction);
+	size_t start = ipow(8, (size_t)instruction);
 	size_t increment = start;
 
 	while (instruction >= 0 && solution == 0) {
 		size_t check = start;
 
 		if (verbose > 3) {
-			std::cout << "instr=" << instruction << "=" << instructions[instruction]
+			std::cout << "instr=" << instruction << "=" << instructions[(size_t)instruction]
 					<< " start=" << start
 					<< " check=" << check 
 					<< " increment=" << increment 
@@ -328,18 +287,18 @@ long part2_works([[maybe_unused]] const data_collection_t data) {
 					if (verbose > 2) {
 						std::cout << "found @ " << check << " " << output << std::endl;
 					}
-					solution = check;
+					solution = (uint64_t)check;
 					instruction--;
 					break;
 					// return check;
 				}
-			} else if (output[instruction] == instructions[instruction]) {
-				while (output[instruction] == instructions[instruction]) {
+			} else if (output[(size_t)instruction] == instructions[(size_t)instruction]) {
+				while (output[(size_t)instruction] == instructions[(size_t)instruction]) {
 					if (verbose > 2) {
 						std::cout << "Xfound @ " << check << " " << output << std::endl;
 					}
 					if (instruction <= 0) {
-						solution = check;
+						solution = (uint64_t)check;
 						break;
 					} else {
 						start = check;
