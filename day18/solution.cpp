@@ -12,11 +12,8 @@
 #include "aoc2024.h"
 #include "solution.h"
 
-bool test_file = true;
-
-
+// dijkstra types, code below
 std::vector<point_t> directions = {{0, 1}, {1, 0}, {0, -1}, {-1, 0}};
-
 using dist_t = std::map<vector_t, int>;
 using pred_t = std::map<vector_t, std::vector<vector_t>>;
 std::tuple<size_t, dist_t, pred_t> dijkstra(const charmap_t &map, const point_t &start, const point_t &direction, const point_t &end);
@@ -28,13 +25,13 @@ void populate_map(charmap_t &map, const std::vector<point_t> &points, size_t max
 	}
 }
 
-
-long part1([[maybe_unused]]const data_collection_t data) {
+long part1(const data_collection_t data) {
 	point_t start(0, 0);
 	point_t end(70, 70);
 	size_t time_steps = 1024;
 
-	if (test_file) {
+	// heuristic to determine test vs live data.
+	if (data.size() < 100) {
 		end = {6, 6};
 		time_steps = 12;
 	}
@@ -52,10 +49,53 @@ long part1([[maybe_unused]]const data_collection_t data) {
 	return (long)solution;
 }
 
+// binary search of across time.
+// will need to run dijkstra at most ceil(log2(tile_count)) times (12 in our case)
+long part2(const data_collection_t data) {
+	point_t start(0, 0);
+	point_t end(70, 70);
+
+	// heuristic to determine test vs live data.
+	if (data.size() < 100) {
+		end = {6, 6};
+	}
+
+	size_t success_time = 0;
+	size_t fail_time = data.size();
+	size_t check_time = success_time + (fail_time - success_time) / 2;
+
+	// std::cout << std::endl;
+	while (fail_time > success_time + 1) {
+		charmap_t map((size_t)end.x+1, (size_t)end.y+1);
+
+		check_time = success_time + (fail_time - success_time) / 2;
+		populate_map(map, data, check_time);
+
+		auto [distance, dist, pred] = dijkstra(map, start, start, end);
+		if (distance == INT_MAX) {
+			// std::cout << check_time << " FAIL (" << success_time << "," << fail_time << ")"<< std::endl;
+			fail_time = check_time;
+		} else {
+			// std::cout << check_time << "   OK (" << success_time << "," << fail_time << ")"<< std::endl;
+			success_time = check_time;
+		}
+	}
+
+	// std::cout << check_time << " DONE (" << success_time << "," << fail_time << ")"<< std::endl;
+
+	if (verbose > 1) {
+		std::cout << "at time " << success_time << " block " << data[success_time] << std::endl;
+		std::cout << "at time " << fail_time << " block " << data[fail_time] << std::endl;
+	}
+
+	return data[success_time].x * 100 + data[success_time].y;
+}
+
 // this works but is slow (few seconds)
 // faster would be to only recalculate if dropped tile lands on existing shortest path
 // then re-dijkstra
-long part2([[maybe_unused]] const data_collection_t data) {
+// even better, binary search
+long part2_slow(const data_collection_t data) {
 	size_t solution_time = 0;
 
 	point_t start(0, 0);

@@ -69,7 +69,7 @@ lint: $(SOURCES)
 
 test: $(TARGET)
 	@-/bin/echo -n "$(DAY) "
-	@-./$(TARGET) -v -s 1 -g 2 test.txt || true
+	@-./$(TARGET) -v -s 22 -g 601 test.txt || true
 	@-/bin/echo -n "$(DAY) "
 	@-./$(TARGET) -v -s 374 -g 3012 input.txt || true
 
