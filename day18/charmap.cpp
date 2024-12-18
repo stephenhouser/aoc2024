@@ -1,6 +1,7 @@
 
 #include <iostream>		// cout
 #include <iomanip>		// setw and setprecision on output
+#include <sstream>		// std::ostringstream
 
 #include "charmap.h"
 

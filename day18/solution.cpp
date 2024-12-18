@@ -6,6 +6,7 @@
 #include <numeric>		// std::accumulate
 #include <queue>
 #include <limits.h>
+#include <map>
 
 #include "point.h"
 #include "charmap.h"
@@ -17,6 +18,9 @@ std::vector<point_t> directions = {{0, 1}, {1, 0}, {0, -1}, {-1, 0}};
 using dist_t = std::map<vector_t, int>;
 using pred_t = std::map<vector_t, std::vector<vector_t>>;
 std::tuple<size_t, dist_t, pred_t> dijkstra(const charmap_t &map, const point_t &start, const point_t &direction, const point_t &end);
+
+std::tuple<size_t, dist_t, pred_t> astar(const charmap_t &map, const point_t &start, const point_t &direction, const point_t &end);
+
 
 void populate_map(charmap_t &map, const std::vector<point_t> &points, size_t max) {
 	for (size_t p = 0; p < max; p++) {
@@ -72,6 +76,7 @@ long part2(const data_collection_t data) {
 		populate_map(map, data, check_time);
 
 		auto [distance, dist, pred] = dijkstra(map, start, start, end);
+		// auto [distance, dist, pred] = astar(map, start, start, end);
 		if (distance == INT_MAX) {
 			// std::cout << check_time << " FAIL (" << success_time << "," << fail_time << ")"<< std::endl;
 			fail_time = check_time;
@@ -155,9 +160,9 @@ class compare_cost {
 
 
 std::tuple<size_t, dist_t, pred_t>
-dijkstra(const charmap_t &map, 
-		 const point_t &start, 
-		 const point_t &direction, 
+dijkstra(const charmap_t &map,
+		 const point_t &start,
+		 const point_t &direction,
 		 const point_t &end) {
 
 	dist_t dist;
@@ -211,4 +216,71 @@ dijkstra(const charmap_t &map,
 	}
 
 	return {INT_MAX, dist, pred};
+}
+
+
+// Heuristic function using Manhattan distance
+int manhattan_distance(const point_t& p1, const point_t& p2) {
+    return std::abs(p1.x - p2.x) + std::abs(p1.y - p2.y);
+}
+
+std::tuple<size_t, dist_t, pred_t>
+astar(const charmap_t &map,
+      const point_t &start,
+      const point_t &direction,
+      const point_t &end) {
+
+    dist_t g_score;  // Cost from start to current node
+    dist_t f_score;  // Estimated total cost (g_score + heuristic)
+    pred_t pred;
+    std::priority_queue<vector_t, std::vector<vector_t>, compare_cost> Q;
+
+    // Initialize start node
+    Q.push({start, direction});
+    g_score[{start, direction}] = 0;
+    f_score[{start, direction}] = manhattan_distance(start, end);
+
+    while (!Q.empty()) {
+        vector_t u = Q.top();
+        Q.pop();
+
+        auto current_cost = u.p.z;
+        u.p.z = 0; // clear for map insertion
+
+        if (u.p == end) {
+            return {current_cost, g_score, pred};
+        }
+
+        // Explore neighbors
+        for (auto direction : directions) {
+            vector_t v(u.p+direction, direction);
+
+            // Calculate g_score for neighbor
+            int tentative_g_score = g_score[u] + 1; // Basic cost is 1
+
+            if (map.is_valid(v.p.x, v.p.y) && !map.is_char(v.p.x, v.p.y, '#')) {
+                // Node not yet discovered or better path found
+                if (g_score.find(v) == g_score.end() ||
+                    tentative_g_score < g_score[v]) {
+
+                    // Update scores and predecessor
+                    g_score[v] = tentative_g_score;
+                    f_score[v] = tentative_g_score + manhattan_distance(v.p, end);
+
+                    pred[v].clear();
+                    pred[v].push_back(u);
+
+                    // Update priority queue with f_score
+                    v.p.z = f_score[v];
+                    Q.push(v);
+
+                } else if (tentative_g_score == g_score[v]) {
+                    // Equal cost path found
+                    pred[v].push_back(u);
+                }
+            }
+        }
+    }
+
+    return {INT_MAX, g_score, pred};
 }
