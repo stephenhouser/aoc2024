@@ -32,6 +32,21 @@ const std::vector<std::string> split(const std::string &str, const std::string &
     return tokens;
 }
 
+const std::vector<int> split_int(const std::string &str, const std::string &delim) {
+    std::vector<int> tokens;
+    char *str_c { strdup(str.c_str()) };
+    char *token { NULL };
+
+    token = strtok(str_c, delim.c_str()); 
+    while (token != NULL) { 
+        tokens.push_back(atoi(token));  
+        token = strtok(NULL, delim.c_str()); 
+    }
+
+    free(str_c);
+    return tokens;
+}
+
 // from https://insanecoding.blogspot.com/2011/11/how-to-read-in-file-in-c.html
 const std::string read_file(const std::string &filename) {
     // get file size to read entire file in one go.
@@ -70,7 +85,7 @@ const std::vector<std::string> read_lines(const std::string &path) {
 }
 
 int part_wrapper(int part_n, long solution, const std::string &path) {
-    int success = 1;
+    int success = 0;
     if (solution >= 0) { // 0 <= solution, run the code...
         auto data = read_data(path);
 
@@ -80,7 +95,6 @@ int part_wrapper(int part_n, long solution, const std::string &path) {
 
         if (0 < solution) { // 0 < solution, check the answer
             success = (answer == solution) ? 1 : 0;
-        }
 
             if (verbose) {
                 if (part_n == 1 && answer == solution) {
@@ -93,7 +107,7 @@ int part_wrapper(int part_n, long solution, const std::string &path) {
                     std::cout << "  gold=  ";
                 }
             }
-        // }
+        }
 
         std::cout << std::setw(answer_width) << std::left 
                   << answer << "\033[0m";

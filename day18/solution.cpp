@@ -101,7 +101,7 @@ long part2_slow(const data_collection_t data) {
 	point_t start(0, 0);
 	point_t end(70, 70);
 
-	if (test_file) {
+	if (data.size() < 100) {
 		end = {6, 6};
 	}
 

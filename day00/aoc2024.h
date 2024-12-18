@@ -9,6 +9,7 @@ const std::string read_file(const std::string &filename);
 const std::vector<std::string> read_lines(const std::string &filename);
 
 const std::vector<std::string> split(const std::string &str, const std::string &delim);
+const std::vector<int> split_int(const std::string &str, const std::string &delim);
 
 template <typename T, typename U>
 const std::vector<std::tuple<T, U>> zip(std::vector<T> left, std::vector<U> right) {

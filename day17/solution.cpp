@@ -146,7 +146,7 @@ std::vector<int> simulate(cpu_t &cpu, const std::vector<int> &instructions, size
 }
 
 
-uint64_t part1(const data_collection_t data) {
+long part1(const data_collection_t data) {
 	uint64_t solution = 0;
 
 	auto [cpu, instructions] = load_program(data);
@@ -168,7 +168,7 @@ uint64_t part1(const data_collection_t data) {
 		solution = solution * 10 + static_cast<uint64_t>(output[i]);
 	}
 
-	return solution;
+	return (long)solution;
 }
 
 
@@ -179,7 +179,7 @@ uint64_t set_octal(uint64_t n, uint64_t octal, uint64_t digit) {
 	return clean_value | octal_value;
 }
 
-uint64_t part2(const data_collection_t data) {
+long part2(const data_collection_t data) {
 	uint64_t solution = 0;
 
 	auto [cpu_initial, instructions] = load_program(data);
@@ -215,7 +215,7 @@ uint64_t part2(const data_collection_t data) {
 		std::sort(candidates.begin(), candidates.end(), std::less<uint64_t>());
 	}
 
-	return static_cast<uint64_t>(candidates[0]);
+	return static_cast<long>(candidates[0]);
 }
 
 // slow original version, takes a long time but works.
