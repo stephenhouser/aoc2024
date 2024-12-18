@@ -86,7 +86,12 @@ Contains my solutions to the [Advent of Code 2024](https://adventofcode.com/2024
 
     Simulation, Pattern, Math. Simulate a simple computer determine output; find when output matches instruction set (repeating patterns). Refined second part with octal search.
 
-- [Day 18: ](https://adventofcode.com/2024/day18) -- [solution](./day18)
+- [Day 18: RAM Run](https://adventofcode.com/2024/day18) -- [solution](./day18)
+
+    Dijkstra's and binary search; series of tiles added to map, after n steps is the map traversable (dijkstra); find the added tile that makes the map not traversable (binary search).
+
+- [Day 19: ](https://adventofcode.com/2024/day19) -- [solution](./day19)
+
 
 ## NOTES
 
