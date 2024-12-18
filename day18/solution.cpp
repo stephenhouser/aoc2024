@@ -13,6 +13,8 @@
 #include "aoc2024.h"
 #include "solution.h"
 
+// using charmap_t = charmap2_t;
+
 // dijkstra types, code below
 std::vector<point_t> directions = {{0, 1}, {1, 0}, {0, -1}, {-1, 0}};
 using dist_t = std::map<vector_t, int>;
