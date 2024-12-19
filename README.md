@@ -90,8 +90,11 @@ Contains my solutions to the [Advent of Code 2024](https://adventofcode.com/2024
 
     Dijkstra's and binary search; series of tiles added to map, after n steps is the map traversable (dijkstra); find the added tile that makes the map not traversable (binary search).
 
-- [Day 19: ](https://adventofcode.com/2024/day19) -- [solution](./day19)
+- [Day 19: Linen Layout](https://adventofcode.com/2024/day19) -- [solution](./day19)
 
+    Regex, Combinations, Memoization; set of towels and possible arrangements, first part was are the arrangements valid or not. Used a slow regex which I knew would not work for a deeper problem. Second part was how many ways are each valid arrangement possible. Used memoization on a depth first search (DFS).
+
+- [Day 20: ](https://adventofcode.com/2024/day20) -- [solution](./day20)
 
 ## NOTES
 
