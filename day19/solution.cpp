@@ -33,29 +33,57 @@
 // 	return count;
 // }
 
-uint64_t string_hash(const char *s) {
-    const uint64_t p = 31;
-    const uint64_t m = 1e9 + 9;
-    uint64_t hash_value = 0;
-    uint64_t p_pow = 1;
-	for (size_t i = 0; i < strlen(s); i++) {
-        hash_value = (hash_value + ((uint64_t)s[i] - (uint64_t)'a' + (uint64_t)1) * p_pow) % m;
-        p_pow = (p_pow * p) % m;
-    }
-    return hash_value;
-}
+struct string_cache_t {
+	std::map<uint64_t, uint64_t> cache{};
 
-std::map<uint64_t, uint64_t> seen;
+	uint64_t check(const char *s) {
+		uint64_t hash = this->hash(s);
+		if (cache.find(hash) != cache.end()) {
+			return hash;
+		}
+
+		return 0;
+	}
+
+	uint64_t read(uint64_t hash) {
+		return cache[hash];
+	}
+
+	uint64_t read(const char *s) {
+		uint64_t hash = this->hash(s);
+		return cache[hash];
+	}
+
+	void write(const char *s, uint64_t n) {
+		uint64_t hash = this->hash(s);
+		cache[hash] = n;
+	}
+
+	// adapted from https://cp-algorithms.com/string/string-hashing.html
+	uint64_t hash(const char *s) {
+		const uint64_t p = 31;
+		const uint64_t m = 1e9 + 9;
+		uint64_t hash_value = 0;
+		uint64_t p_pow = 1;
+		for (size_t i = 0; i < strlen(s); i++) {
+			hash_value = (hash_value + ((uint64_t)s[i] - (uint64_t)'a' + (uint64_t)1) * p_pow) % m;
+			p_pow = (p_pow * p) % m;
+		}
+		return hash_value;
+	}
+};
+
+string_cache_t seen;
 uint64_t can_arrange(std::vector<std::string> &towels, const char *arrangement) {
 	uint64_t count = 0;
 
-	if (strlen(arrangement) == 0) {
+	if (*arrangement == '\0') {
 		return 1;
 	}
 
-	uint64_t h = string_hash(arrangement);
-	if (seen.find(h) != seen.end()) {
-		return seen[h];
+
+	if (auto hash = seen.check(arrangement)) {
+		return seen.read(hash);
 	}
 
 	for (std::string &t : towels) {
@@ -65,7 +93,8 @@ uint64_t can_arrange(std::vector<std::string> &towels, const char *arrangement) 
 		}
 	}
 
-	seen[h] = count;
+	// seen[h] = count;
+	seen.write(arrangement, count);
 	return count;
 }
 
