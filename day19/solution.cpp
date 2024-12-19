@@ -81,7 +81,6 @@ uint64_t can_arrange(std::vector<std::string> &towels, const char *arrangement) 
 		return 1;
 	}
 
-
 	if (auto hash = seen.check(arrangement)) {
 		return seen.read(hash);
 	}
