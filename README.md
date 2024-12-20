@@ -94,7 +94,14 @@ Contains my solutions to the [Advent of Code 2024](https://adventofcode.com/2024
 
     Regex, Combinations, Memoization; set of towels and possible arrangements, first part was are the arrangements valid or not. Used a slow regex which I knew would not work for a deeper problem. Second part was how many ways are each valid arrangement possible. Used memoization on a depth first search (DFS).
 
-- [Day 20: ](https://adventofcode.com/2024/day20) -- [solution](./day20)
+- [Day 20: Race Condition](https://adventofcode.com/2024/day20) -- [solution](./day20)
+
+
+- [Day 21: ](https://adventofcode.com/2024/day21) -- [solution](./day21)
+- [Day 22: ](https://adventofcode.com/2024/day22) -- [solution](./day22)
+- [Day 23: ](https://adventofcode.com/2024/day23) -- [solution](./day23)
+- [Day 24: ](https://adventofcode.com/2024/day24) -- [solution](./day24)
+
 
 ## NOTES
 
