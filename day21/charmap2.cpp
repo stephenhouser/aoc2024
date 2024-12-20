@@ -3,9 +3,9 @@
 #include <iomanip>		// setw and setprecision on output
 #include <sstream>		// std::ostringstream
 
-#include "charmap.h"
+#include "charmap2.h"
 
-std::ostream& operator<<(std::ostream& os, const charmap_t &map) {
+std::ostream& operator<<(std::ostream& os, const charmap2_t &map) {
 	std::ostringstream buffer;
 
 	os << "   ";
@@ -21,15 +21,13 @@ std::ostream& operator<<(std::ostream& os, const charmap_t &map) {
 	os << "-+-\n";
 
 
-	int y = 0;
-	for (auto yit = map.data.begin(); yit != map.data.end(); ++yit) {
+	for (auto y = 0; y <= map.size_y; y++) {
 		os << y % 10 << "| ";
 
-		for (auto xit = (*yit).begin(); xit != (*yit).end(); ++xit) {
-			os << *xit;
+		for (auto x = 0; x < map.size_x; x++) {
+			os << x;
 		}
 		os << " |" << y << "\n";
-		++y;
 	}
 
 	os << "-+-";
