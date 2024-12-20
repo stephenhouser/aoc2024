@@ -71,7 +71,7 @@ test: $(TARGET)
 	@-/bin/echo -n "$(DAY) "
 	@-./$(TARGET) -v -s 44 -g 285 test.txt || true
 	@-/bin/echo -n "$(DAY) "
-	@-./$(TARGET) -v -s 1518 -g 2 input.txt || true
+	@-./$(TARGET) -v -s 1518 -g 1032257 input.txt || true
 
 clean:
 	-rm -f *.o
