@@ -3,6 +3,7 @@
 
 #include <string>
 #include <stdexcept>
+#include <vector>
 
 // Define maximum dimensions for the map
 const int MAX_SIZE_X = 1000;
