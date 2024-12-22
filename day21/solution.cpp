@@ -81,14 +81,21 @@ std::vector<std::string> dirpad_codes(const char current, const char next) {
 	return {};
 }
 
+std::map<std::tuple<char, char, int>, size_t> robot_cache;
+
 size_t robot(const char current, const char next, int depth, bool numpad) {
 	if (depth == 0) {
 		auto codes = dirpad_codes(current, next);
 		return codes[0].length() + 1;
 	}
 
+	auto cache_it = robot_cache.find({current, next, depth});
+	if (cache_it != robot_cache.end()) {
+		return robot_cache[{current, next, depth}];
+	}
+
 	// std::string min_code;
-	size_t min_cost = INT_MAX;
+	size_t min_cost = ULLONG_MAX;
 
 	// possible paths
 	auto possible = numpad ? numpad_codes(current, next) : dirpad_codes(current, next);
@@ -108,6 +115,7 @@ size_t robot(const char current, const char next, int depth, bool numpad) {
 	}
 
 	// std::cout << min_code;
+	robot_cache[{current, next, depth}] = min_cost;
 	return min_cost;
 }
 
@@ -146,7 +154,14 @@ long part1(const data_collection_t data) {
 	return (long)solution;
 }
 
-
+// 90594397580
+// 86475783008
+// 87513499934
+// 91387668326
+// 86475783012
+// 176452
+//
+// 218309335714068
 long part2(const data_collection_t data) {
 	size_t solution = 0;
 	int depth = 25;
