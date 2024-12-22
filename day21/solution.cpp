@@ -8,7 +8,6 @@
 #include <set>
 #include <limits.h>
 
-#include "point.h"
 #include "aoc2024.h"
 #include "solution.h"
 
