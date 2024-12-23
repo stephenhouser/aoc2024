@@ -9,6 +9,7 @@
 #include <unordered_set>
 #include <set>
 #include <algorithm>
+#include <cassert>
 
 #include "aoc2024.h"
 #include "solution.h"
@@ -109,6 +110,38 @@ long part1(const data_collection_t data) {
 	return solution;
 }
 
+using node_t = size_t;
+using graph_t = std::unordered_map<node_t, std::unordered_set<node_t>>;
+
+node_t hash(std::string &node) {
+	assert(node.length() == 2);
+	return (((node[0] & 0xFF) << 8) | (node[1] & 0xFF));
+}
+
+std::string unhash(node_t node_hash) {
+	std::string node;
+	node.push_back((char)((node_hash >> 8) & 0xFF));
+	node.push_back((char)(node_hash & 0xFF));
+	return node;
+}
+
+std::string lansert(const std::vector<node_t> &nodes) {
+	std::string clique_name;
+	std::vector<std::string> sorted_nodes;
+
+	for (auto node : nodes) {
+		sorted_nodes.push_back(unhash(node));
+	}
+
+	std::sort(sorted_nodes.begin(), sorted_nodes.end());
+	for (auto n : sorted_nodes) {
+		clique_name.append(n);
+		clique_name.append(",");
+	}
+
+	clique_name.pop_back();
+	return clique_name;
+}
 /*
 
 The recursion is initiated by setting R and X to be the empty set and P to be the vertex set of the graph. Within each recursive call, the algorithm considers the vertices in P in turn; if there are no such vertices, it either reports R as a maximal clique (if X is empty), or backtracks. For each vertex v chosen from P, it makes a recursive call in which v is added to R and in which P and X are restricted to the neighbor set N(v) of v, which finds and reports all clique extensions of R that contain v. Then, it moves v from P to X to exclude it from consideration in future cliques and continues with the next vertex in P.
@@ -121,22 +154,17 @@ algorithm BronKerbosch1(R, P, X) is
         P := P \ {v}
         X := X ⋃ {v}
 */
-std::vector<std::string> largest_clique;
+std::vector<node_t> largest_clique;
 
-std::vector<std::string> keys(std::unordered_map<std::string, std::unordered_set<std::string>> &m) {
-	std::vector<std::string> collect;
-	for (auto n : m) {
+std::vector<node_t> keys(graph_t &graph) {
+	std::vector<node_t> collect;
+	for (auto n : graph) {
 		collect.push_back(n.first);
 	}
 	return collect;
 }
 
-void
-bron_kerbosch(
-		std::unordered_map<std::string, std::unordered_set<std::string>> &R, 
-		std::unordered_map<std::string, std::unordered_set<std::string>> &P,
-		std::unordered_map<std::string, std::unordered_set<std::string>> &X) {
-
+void bron_kerbosch(graph_t &R, graph_t &P, graph_t &X) {
 	if (P.empty() && X.empty()) {
 		// we found a clique, is it larger than the largest?
 		auto clique = keys(R);
@@ -162,7 +190,7 @@ bron_kerbosch(
 		Rn[v] = v_edges;
 
 		// P intersection Neighbors of(v)
-		std::unordered_map<std::string, std::unordered_set<std::string>> Pn;
+		graph_t Pn;
 		for (auto n : v_edges) {
 			if (P.find(n) != P.end()) {
 				Pn[n] = P[n];
@@ -170,7 +198,7 @@ bron_kerbosch(
 		}
 
 		// X intersection Neighbors of (v)
-		std::unordered_map<std::string, std::unordered_set<std::string>> Xn;
+		graph_t Xn;
 		for (auto n : v_edges) {
 			if (X.find(n) != X.end()) {
 				Xn[n] = X[n];
@@ -195,21 +223,20 @@ long part2([[maybe_unused]] const data_collection_t data) {
 	long solution = 0;
 
 	std::set<std::string> t_nodes;
-	std::unordered_map<std::string, std::unordered_set<std::string>> nodes;
+	graph_t graph;
 	for (auto edge : data) {
 		// std::cout << "Edge: " << edge.first << "->" << edge.second;
 		// std::cout << "  " << edge.second << "->" << edge.first << std::endl;
-		nodes[edge.first].insert(edge.second);
-		nodes[edge.second].insert(edge.first);
+		auto n1 = hash(edge.first);
+		auto n2 = hash(edge.second);
 
-		if (starts_with(edge.first, "t")) {
-			t_nodes.insert(edge.first);
-		}
+		graph[n1].insert(n2);
+		graph[n2].insert(n1);
 	}
 
-	std::unordered_map<std::string, std::unordered_set<std::string>> R;
-	std::unordered_map<std::string, std::unordered_set<std::string>> X;
-	bron_kerbosch(R, nodes, X);
+	graph_t R;
+	graph_t X;
+	bron_kerbosch(R, graph, X);
 
 	std::cout << "found size " << largest_clique.size() << std::endl;
 	std::cout << lansert(largest_clique) << std::endl;
