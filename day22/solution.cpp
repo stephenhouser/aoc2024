@@ -6,6 +6,8 @@
 #include <numeric>		// std::accumulate
 #include <unordered_set>
 #include <unordered_map>
+#include <cassert>
+#include <cstdint>
 
 #include "aoc2024.h"
 #include "solution.h"
@@ -87,6 +89,14 @@ std::unordered_set<std::string> find_patterns(const std::string &prices, std::st
 	return patterns;
 }
 
+size_t pat_hash(const std::string_view &pattern) {
+	// assert(pattern.size() == 4);
+	return (size_t)(pattern[0] & 0xFF) << 48
+	     | (size_t)(pattern[1] & 0xFF) << 32
+		 | (size_t)(pattern[2] & 0xFF) << 16
+		 | (size_t)(pattern[3] & 0xFF);
+}
+
 // 1442 too low
 // 1449 just right
 // 1450 too high
@@ -97,7 +107,8 @@ long part2(const data_collection_t data) {
 	// std::cout << std::endl;
 	
 		// banannas[pattern][buyer] = price
-	std::unordered_map<std::string, std::unordered_map<size_t, int>> banannas;
+	// std::unordered_map<std::string, std::unordered_map<size_t, int>> banannas;
+	std::unordered_map<size_t, std::unordered_map<size_t, int>> banannas;
 
 	// for (auto secret : data) {
 	for (size_t buyer = 0; buyer < data.size(); buyer++) {
@@ -120,11 +131,10 @@ long part2(const data_collection_t data) {
 
 			// if we are at least 4 chars in, start collecting patterns
 			if (i >= 3) {
-				std::string pattern{changes.substr(changes.size()-4, 4)};
-
-				auto bit = banannas[pattern].find(buyer);
-				if (bit == banannas[pattern].end()) {
-					banannas[pattern][buyer] = current;
+				auto hash = pat_hash(changes.substr(changes.size()-4, 4));
+				auto bit = banannas[hash].find(buyer);
+				if (bit == banannas[hash].end()) {
+					banannas[hash][buyer] = current;
 				}
 			}
 
