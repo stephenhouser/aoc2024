@@ -123,7 +123,7 @@ algorithm BronKerbosch1(R, P, X) is
 */
 std::vector<std::string> largest_clique;
 
-std::vector<std::string> keys(std::unordered_map<std::string, std::set<std::string>> &m) {
+std::vector<std::string> keys(std::unordered_map<std::string, std::unordered_set<std::string>> &m) {
 	std::vector<std::string> collect;
 	for (auto n : m) {
 		collect.push_back(n.first);
@@ -133,9 +133,9 @@ std::vector<std::string> keys(std::unordered_map<std::string, std::set<std::stri
 
 void
 bron_kerbosch(
-		std::unordered_map<std::string, std::set<std::string>> &R, 
-		std::unordered_map<std::string, std::set<std::string>> &P,
-		std::unordered_map<std::string, std::set<std::string>> &X) {
+		std::unordered_map<std::string, std::unordered_set<std::string>> &R, 
+		std::unordered_map<std::string, std::unordered_set<std::string>> &P,
+		std::unordered_map<std::string, std::unordered_set<std::string>> &X) {
 
 	if (P.empty() && X.empty()) {
 		// we found a clique, is it larger than the largest?
@@ -162,7 +162,7 @@ bron_kerbosch(
 		Rn[v] = v_edges;
 
 		// P intersection Neighbors of(v)
-		std::unordered_map<std::string, std::set<std::string>> Pn;
+		std::unordered_map<std::string, std::unordered_set<std::string>> Pn;
 		for (auto n : v_edges) {
 			if (P.find(n) != P.end()) {
 				Pn[n] = P[n];
@@ -170,7 +170,7 @@ bron_kerbosch(
 		}
 
 		// X intersection Neighbors of (v)
-		std::unordered_map<std::string, std::set<std::string>> Xn;
+		std::unordered_map<std::string, std::unordered_set<std::string>> Xn;
 		for (auto n : v_edges) {
 			if (X.find(n) != X.end()) {
 				Xn[n] = X[n];
@@ -195,7 +195,7 @@ long part2([[maybe_unused]] const data_collection_t data) {
 	long solution = 0;
 
 	std::set<std::string> t_nodes;
-	std::unordered_map<std::string, std::set<std::string>> nodes;
+	std::unordered_map<std::string, std::unordered_set<std::string>> nodes;
 	for (auto edge : data) {
 		// std::cout << "Edge: " << edge.first << "->" << edge.second;
 		// std::cout << "  " << edge.second << "->" << edge.first << std::endl;
@@ -207,8 +207,8 @@ long part2([[maybe_unused]] const data_collection_t data) {
 		}
 	}
 
-	std::unordered_map<std::string, std::set<std::string>> R;
-	std::unordered_map<std::string, std::set<std::string>> X;
+	std::unordered_map<std::string, std::unordered_set<std::string>> R;
+	std::unordered_map<std::string, std::unordered_set<std::string>> X;
 	bron_kerbosch(R, nodes, X);
 
 	std::cout << "found size " << largest_clique.size() << std::endl;
