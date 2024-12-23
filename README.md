@@ -96,9 +96,16 @@ Contains my solutions to the [Advent of Code 2024](https://adventofcode.com/2024
 
 - [Day 20: Race Condition](https://adventofcode.com/2024/day20) -- [solution](./day20)
 
+    Mapping, Dijkstra, and checking for shortcuts to the paths. First part allowed skipping one wall, second part let you jump anywhere in a 20 (manhatten) distance.
 
-- [Day 21: ](https://adventofcode.com/2024/day21) -- [solution](./day21)
-- [Day 22: ](https://adventofcode.com/2024/day22) -- [solution](./day22)
+- [Day 21: Keypad Conundrum](https://adventofcode.com/2024/day21) -- [solution](./day21)
+
+    Recursion, serious recursion. Took an extra day for this one; first was remote controlling a remote control that controled a robot. Second was 25 layers deep. Stuck finding the "best path" for quite a while. Had to evaluate all possible paths. Second part really was just adding cache/memoization to speed up.
+
+- [Day 22: Monkey Market](https://adventofcode.com/2024/day22) -- [solution](./day22)
+
+    Pattern matching; this was a reading comprehension test. first part was straightforward math and manipulations; second part was an exhaustive search of the patterns in previous results. Matching for best pattern/sale price of banannas.
+
 - [Day 23: ](https://adventofcode.com/2024/day23) -- [solution](./day23)
 - [Day 24: ](https://adventofcode.com/2024/day24) -- [solution](./day24)
 
