@@ -48,47 +48,6 @@ long part1([[maybe_unused]]const data_collection_t data) {
 	return (long)solution;
 }
 
-// how many banannas would we get with pattern of changes
-// Each buyer only wants to buy one hiding spot, so after the hiding spot is sold, the monkey will move on to the next buyer.
-// so returns when found the first match of the pattern
-size_t eval(const std::string &prices, std::string &changes, std::string &needle) {
-	size_t sales = 0;
-	size_t n_size = needle.size();
-	size_t p_size = prices.size();
-
-	size_t pos = changes.find(needle);
-	while (pos != std::string::npos) {
-		if (pos < p_size-n_size) {
-			char price = prices[pos + n_size];	// price is the last digit in the sequence
-			sales = static_cast<size_t>(price - '0');
-			// don't accumulate, just return the sale price
-			// std::cout << "\tfound pos=" << pos << " price= " << price << " : " << sales << std::endl;
-			return sales;
-		}
-
-		pos = changes.find(needle, pos+1);
-	}
-
-	return sales;
-}
-
-// returns all the 4 char change patterns that end with price
-std::unordered_set<std::string> find_patterns(const std::string &prices, std::string &changes, const int price) {
-	size_t pattern_length = 4;
-
-	// std::cout << "find patterns with " << price+'0' << std::endl;
-
-	std::unordered_set<std::string> patterns;
-	// patterns are 4 in length, so start at 4
-	for (size_t i = pattern_length; i < prices.length(); i++) {
-		if (prices[i] == (char)price+'0') {
-			patterns.insert(changes.substr(i-4, 4));
-		}
-	}
-
-	return patterns;
-}
-
 size_t pat_hash(const std::string_view &pattern) {
 	// assert(pattern.size() == 4);
 	return (size_t)(pattern[0] & 0xFF) << 48
@@ -108,6 +67,7 @@ long part2(const data_collection_t data) {
 	
 		// banannas[pattern][buyer] = price
 	// std::unordered_map<std::string, std::unordered_map<size_t, int>> banannas;
+	// std::unordered_map<size_t, std::unordered_map<size_t, int>> banannas;
 	std::unordered_map<size_t, std::unordered_map<size_t, int>> banannas;
 
 	// for (auto secret : data) {
