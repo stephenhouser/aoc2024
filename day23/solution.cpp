@@ -8,6 +8,7 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <set>
+#include <algorithm>
 
 #include "aoc2024.h"
 #include "solution.h"
@@ -29,15 +30,31 @@ std::string lansert(const std::vector<std::string> &nodes) {
 	std::sort(sorted_nodes.begin(), sorted_nodes.end());
 	for (auto n : sorted_nodes) {
 		clique_name.append(n);
+		clique_name.append(",");
 	}
 
+	clique_name.pop_back();
 	return clique_name;
 }
+
+
+// std::string lansert(const std::set<std::string> &nodes) {
+// 	std::string clique_name;
+// 	std::vector<std::string> sorted_nodes;
+
+// 	std::copy(nodes.begin(), nodes.end(), std::back_inserter(sorted_nodes));
+
+// 	std::sort(sorted_nodes.begin(), sorted_nodes.end());
+// 	for (auto n : sorted_nodes) {
+// 		clique_name.append(n);
+// 	}
+
+// 	return clique_name;
+// }
 
 std::string lansert(const std::string &n1, const std::string &n2, const std::string &n3) {
 	return lansert({n1, n2, n3});
 }
-
 
 // 234 too low
 // 1238 just right, dummy on the min and max calcs
@@ -92,10 +109,118 @@ long part1(const data_collection_t data) {
 	return solution;
 }
 
-long part2([[maybe_unused]] const data_collection_t data) {
-	long solution = 2;
+/*
 
-	// TODO: part 2 code here
+The recursion is initiated by setting R and X to be the empty set and P to be the vertex set of the graph. Within each recursive call, the algorithm considers the vertices in P in turn; if there are no such vertices, it either reports R as a maximal clique (if X is empty), or backtracks. For each vertex v chosen from P, it makes a recursive call in which v is added to R and in which P and X are restricted to the neighbor set N(v) of v, which finds and reports all clique extensions of R that contain v. Then, it moves v from P to X to exclude it from consideration in future cliques and continues with the next vertex in P.
+
+algorithm BronKerbosch1(R, P, X) is
+    if P and X are both empty then
+        report R as a maximal clique
+    for each vertex v in P do
+        BronKerbosch1(R ⋃ {v}, P ⋂ N(v), X ⋂ N(v))
+        P := P \ {v}
+        X := X ⋃ {v}
+*/
+std::set<std::string> cliques;
+
+bool
+bron_kerbosch(
+		std::unordered_map<std::string, std::set<std::string>> &R, 
+		std::unordered_map<std::string, std::set<std::string>> &P,
+		std::unordered_map<std::string, std::set<std::string>> &X) {
+
+	// std::cout << "R=" << R.size() << " ";
+	// std::cout << "X=" << X.size() << " ";
+	// std::cout << "P=" << P.size() << " ";
+	// std::cout << std::endl;
+
+	if (P.empty() && X.empty()) {
+		// this is the R we are looking for!
+		// std::cout << "\nFOUND" << R.size() << ":\n";
+		std::vector<std::string> collect;
+		for (auto n : R) {
+			collect.push_back(n.first);
+		}
+		cliques.insert(lansert(collect));
+		return R.size();
+	}
+
+	while (!P.empty()) {
+		auto nit = P.begin();
+		auto v = (*nit).first;
+		auto v_edges = (*nit).second;
+		P.erase(nit);
+
+	// for (auto p : P) {
+	// 	auto v = p.first;
+	// 	auto v_edges = p.second;
+
+		// std::cout << "\tP:" << v << std::endl;
+
+		// R union {v}
+		auto Rn{R};
+		Rn[v] = v_edges;
+
+		// std::cout << "\tRn:" << Rn.size() << std::endl;
+
+		// P intersection Neighbors of(v)
+		std::unordered_map<std::string, std::set<std::string>> Pn;
+		for (auto n : v_edges) {
+			if (P.find(n) != P.end()) {
+				Pn[n] = P[n];
+			}
+		}
+
+		// X intersection Neighbors of (v)
+		std::unordered_map<std::string, std::set<std::string>> Xn;
+		for (auto n : v_edges) {
+			if (X.find(n) != X.end()) {
+				Xn[n] = X[n];
+			}
+		}
+
+		bron_kerbosch(Rn, Pn, Xn);
+
+		// std::cout << "here" << std::endl;
+
+		// P := P \ {v} -- remove v
+		auto pit2 = P.find(v);
+		if (pit2 != P.end())
+			P.erase(pit2);
+
+        // X := X ⋃ {v}
+		X[v] = v_edges;
+	}
+
+	// std::cout << " OFF END" << std::endl;
+	return false;
+}
+
+// first try
+// bg,bl,ch,fn,fv,gd,jn,kk,lk,pv,rr,tb,vw
+long part2([[maybe_unused]] const data_collection_t data) {
+	long solution = 0;
+
+	std::set<std::string> t_nodes;
+	std::unordered_map<std::string, std::set<std::string>> nodes;
+	for (auto edge : data) {
+		// std::cout << "Edge: " << edge.first << "->" << edge.second;
+		// std::cout << "  " << edge.second << "->" << edge.first << std::endl;
+		nodes[edge.first].insert(edge.second);
+		nodes[edge.second].insert(edge.first);
+
+		if (starts_with(edge.first, "t")) {
+			t_nodes.insert(edge.first);
+		}
+	}
+
+	std::unordered_map<std::string, std::set<std::string>> R;
+	std::unordered_map<std::string, std::set<std::string>> X;
+	bron_kerbosch(R, nodes, X);
+
+	for (auto c : cliques) {
+		std::cout << c << std::endl;
+	}
 
 	return solution;
 }
