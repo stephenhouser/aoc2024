@@ -22,14 +22,22 @@ bool starts_with(const std::string &s, const std::string &prefix) {
 	return s.find(prefix) == 0;
 }
 
-bool any_starts_with(const std::vector<std::string> &s, const std::string &prefix) {
-	for (auto n : s) {
-		if (n.find(prefix) == 0) {
-			return true;
-		}
+std::string lansert(const std::vector<std::string> &nodes) {
+	std::string clique_name;
+	std::vector<std::string> sorted_nodes{nodes};
+
+	std::sort(sorted_nodes.begin(), sorted_nodes.end());
+	for (auto n : sorted_nodes) {
+		clique_name.append(n);
 	}
-	return false;
+
+	return clique_name;
 }
+
+std::string lansert(const std::string &n1, const std::string &n2, const std::string &n3) {
+	return lansert({n1, n2, n3});
+}
+
 
 // 234 too low
 // 1238 just right, dummy on the min and max calcs
@@ -69,27 +77,8 @@ long part1(const data_collection_t data) {
 			for (auto n3 : n2_edges) {
 				auto n3_edges = nodes[n3];
 				if (n3_edges.find(n1) != n3_edges.end()) {
-
 					// this is a 3-connected set, add it to our list of triples
-
-					// insert them in a sorted order so set will filter for us.
-					// std::cout << n1 << "," << n2 << "," << n3 << std::endl;
-					auto max = std::max(n1, std::max(n2, n3));
-					auto min = std::min(n1, std::min(n2, n3));
-
-					std::string clique;
-					if (n1 != max && n1 != min) {
-						clique.append(min+n1+max);
-						// std::cout << "\t" << min << "," << n1 << "," << max << std::endl;
-					} else if (n2 != min && n2 != max) {
-						clique.append(min+n2+max);
-						// std::cout << "\t" <<  min << "," << n2 << "," << max << std::endl;
-					} else {
-						clique.append(min+n3+max);
-						// std::cout << "\t" <<  min << "," << n3 << "," << max << std::endl;
-					}
-
-					triples.insert(clique);
+					triples.insert(lansert(n1, n2, n3));
 				}
 			}
 		}
