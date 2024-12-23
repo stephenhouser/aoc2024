@@ -217,6 +217,110 @@ void bron_kerbosch(graph_t &R, graph_t &P, graph_t &X) {
 	}
 }
 
+// pivot version not any faster
+void bron_kerbosch_pivot(graph_t &R, graph_t &P, graph_t &X) {
+	if (P.empty() && X.empty()) {
+		// we found a clique, is it larger than the largest?
+		auto clique = keys(R);
+		if (largest_clique.size() < clique.size()) {
+			largest_clique = clique;
+		}
+
+		return;
+	}
+
+
+	// choose a pivot vertex u in P ⋃ X
+	std::unordered_set<node_t> u_neighbors;
+	for (auto p : P) {
+		if (X.find(p.first) != X.end()) {
+			u_neighbors = p.second;
+			break;
+		}
+	}
+
+	graph_t Pu{P};
+    // for each vertex v in P \ N(u) do
+	for (auto n_n : u_neighbors) {
+		auto pit = Pu.find(n_n);
+		if (pit != Pu.end()) {
+			Pu.erase(pit);
+		}
+	}
+	
+	for (auto p : Pu) {
+		auto v = p.first;
+		auto v_edges = p.second;
+
+	// while (!P.empty()) {
+	// 	auto nit = P.begin();
+	// 	auto v = (*nit).first;
+	// 	auto v_edges = (*nit).second;
+	// 	P.erase(nit);
+
+	// for each vertex v in P do
+	// for (auto p : P) {
+	// 	auto v = p.first;
+	// 	auto v_edges = p.second;
+
+		// R union {v}
+		auto Rn{R};
+		Rn[v] = v_edges;
+
+		// P intersection Neighbors of(v)
+		graph_t Pn;
+		for (auto n : v_edges) {
+			if (P.find(n) != P.end()) {
+				Pn[n] = P[n];
+			}
+		}
+
+		// X intersection Neighbors of (v)
+		graph_t Xn;
+		for (auto n : v_edges) {
+			if (X.find(n) != X.end()) {
+				Xn[n] = X[n];
+			}
+		}
+
+		bron_kerbosch_pivot(Rn, Pn, Xn);
+
+		// P := P \ {v} -- remove v
+		auto pit2 = P.find(v);
+		if (pit2 != P.end())
+			P.erase(pit2);
+
+        // X := X ⋃ {v}
+		X[v] = v_edges;
+	}
+}
+
+size_t number_string(std::string &str) {
+	size_t n = 0;
+	for (auto c : str) {
+		if (c >= 'a' && c <= 'z') {
+			n = n << 5 | (size_t)((c - 'a') & 0x1F);
+		}
+	}
+	return n;
+}
+
+
+// adapted from https://cp-algorithms.com/string/string-hashing.html
+size_t string_hash(const std::string &s) {
+	const size_t p = 31;
+	const size_t m = 1e9 + 9;
+	size_t hash_value = 0;
+	size_t p_pow = 1;
+
+	for (size_t i = 0; i < s.length(); i++) {
+		hash_value = (hash_value + ((size_t)s[i] - (size_t)'a' + (size_t)1) * p_pow) % m;
+		p_pow = (p_pow * p) % m;
+	}
+
+	return hash_value;
+}
+
 // first try
 // bg,bl,ch,fn,fv,gd,jn,kk,lk,pv,rr,tb,vw
 long part2([[maybe_unused]] const data_collection_t data) {
@@ -238,9 +342,13 @@ long part2([[maybe_unused]] const data_collection_t data) {
 	graph_t X;
 	bron_kerbosch(R, graph, X);
 
-	std::cout << "found size " << largest_clique.size() << std::endl;
-	std::cout << lansert(largest_clique) << std::endl;
+	std::string passcode = lansert(largest_clique);
+	if (verbose > 1) {
+		std::cout << "found size " << largest_clique.size() << std::endl;
+		std::cout << passcode << std::endl;
+	}
 
+	solution = (long)string_hash(passcode);
 	return solution;
 }
 
