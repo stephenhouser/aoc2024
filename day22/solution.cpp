@@ -64,11 +64,16 @@ long part2(const data_collection_t data) {
 
 	// std::cout << data << std::endl;
 	// std::cout << std::endl;
-	
-		// banannas[pattern][buyer] = price
-	// std::unordered_map<std::string, std::unordered_map<size_t, int>> banannas;
-	// std::unordered_map<size_t, std::unordered_map<size_t, int>> banannas;
-	std::unordered_map<size_t, std::unordered_map<size_t, int>> banannas;
+
+	// keep map of price by the pattern it was first associated with and the buyer	
+	// banannas[pattern][buyer] = price
+	// then we can look up later, each pattern and the total purchased
+
+	// keep just a set of the buyers who have a price for the pattern
+	// so we only count their first
+	std::unordered_map<size_t, std::unordered_set<size_t>> banannas;
+	// keep the total cost for this pattern
+	std::unordered_map<size_t, int> pattern_banannas;
 
 	// for (auto secret : data) {
 	for (size_t buyer = 0; buyer < data.size(); buyer++) {
@@ -90,11 +95,14 @@ long part2(const data_collection_t data) {
 			changes += ((char)change + 'm');
 
 			// if we are at least 4 chars in, start collecting patterns
+			// collect patterns and their first cost as we iterate through 
+			// the secrets. Then we don't have to do it later
 			if (i >= 3) {
 				auto hash = pat_hash(changes.substr(changes.size()-4, 4));
 				auto bit = banannas[hash].find(buyer);
 				if (bit == banannas[hash].end()) {
-					banannas[hash][buyer] = current;
+					banannas[hash].insert(buyer);
+					pattern_banannas[hash] += current;
 				}
 			}
 
@@ -104,19 +112,29 @@ long part2(const data_collection_t data) {
 
 	// std::cout << "checking patterns..." << std::endl;
 
-	size_t solution = 0;
-	for (auto pattern : banannas) {
-		auto buyers = pattern.second;
-		size_t sold = 0;
-		for (auto buyer : buyers) {
-			sold += (size_t)buyer.second;
-		}
+	// size_t solution = 0;
+	// for (auto pattern : banannas) {
+	// 	auto buyers = pattern.second;
+	// 	size_t sold = 0;
+	// 	for (auto buyer : buyers) {
+	// 		sold += (size_t)buyer.second;
+	// 	}
 
-		if (solution < sold) {
-			// std::cout << "pattern=" << pattern.first << " sold=" << sold << std::endl;
-			solution = sold;
+	// 	if (solution < sold) {
+	// 		// std::cout << "pattern=" << pattern.first << " sold=" << sold << std::endl;
+	// 		solution = sold;
+	// 	}
+	// }
+
+	size_t solution = 0;
+	// find max
+	for (auto pattern : pattern_banannas) {
+		if (solution < (size_t)pattern.second) {
+			solution = (size_t)pattern.second;
 		}
 	}
+
+
 
 	return (long)solution;
 }
