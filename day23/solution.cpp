@@ -121,29 +121,35 @@ algorithm BronKerbosch1(R, P, X) is
         P := P \ {v}
         X := X ⋃ {v}
 */
-std::set<std::string> cliques;
+std::vector<std::string> largest_clique;
 
-bool
+std::vector<std::string> keys(std::unordered_map<std::string, std::set<std::string>> &m) {
+	std::vector<std::string> collect;
+	for (auto n : m) {
+		collect.push_back(n.first);
+	}
+	return collect;
+}
+
+void
 bron_kerbosch(
 		std::unordered_map<std::string, std::set<std::string>> &R, 
 		std::unordered_map<std::string, std::set<std::string>> &P,
 		std::unordered_map<std::string, std::set<std::string>> &X) {
 
-	// std::cout << "R=" << R.size() << " ";
-	// std::cout << "X=" << X.size() << " ";
-	// std::cout << "P=" << P.size() << " ";
-	// std::cout << std::endl;
-
 	if (P.empty() && X.empty()) {
-		// this is the R we are looking for!
-		// std::cout << "\nFOUND" << R.size() << ":\n";
-		std::vector<std::string> collect;
-		for (auto n : R) {
-			collect.push_back(n.first);
+		// we found a clique, is it larger than the largest?
+		auto clique = keys(R);
+		if (largest_clique.size() < clique.size()) {
+			largest_clique = clique;
 		}
-		cliques.insert(lansert(collect));
-		return R.size();
+
+		return;
 	}
+
+	// for (auto p : P) {
+	// 	auto v = p.first;
+	// 	auto v_edges = p.second;
 
 	while (!P.empty()) {
 		auto nit = P.begin();
@@ -151,17 +157,9 @@ bron_kerbosch(
 		auto v_edges = (*nit).second;
 		P.erase(nit);
 
-	// for (auto p : P) {
-	// 	auto v = p.first;
-	// 	auto v_edges = p.second;
-
-		// std::cout << "\tP:" << v << std::endl;
-
 		// R union {v}
 		auto Rn{R};
 		Rn[v] = v_edges;
-
-		// std::cout << "\tRn:" << Rn.size() << std::endl;
 
 		// P intersection Neighbors of(v)
 		std::unordered_map<std::string, std::set<std::string>> Pn;
@@ -181,8 +179,6 @@ bron_kerbosch(
 
 		bron_kerbosch(Rn, Pn, Xn);
 
-		// std::cout << "here" << std::endl;
-
 		// P := P \ {v} -- remove v
 		auto pit2 = P.find(v);
 		if (pit2 != P.end())
@@ -191,9 +187,6 @@ bron_kerbosch(
         // X := X ⋃ {v}
 		X[v] = v_edges;
 	}
-
-	// std::cout << " OFF END" << std::endl;
-	return false;
 }
 
 // first try
@@ -218,9 +211,8 @@ long part2([[maybe_unused]] const data_collection_t data) {
 	std::unordered_map<std::string, std::set<std::string>> X;
 	bron_kerbosch(R, nodes, X);
 
-	for (auto c : cliques) {
-		std::cout << c << std::endl;
-	}
+	std::cout << "found size " << largest_clique.size() << std::endl;
+	std::cout << lansert(largest_clique) << std::endl;
 
 	return solution;
 }
