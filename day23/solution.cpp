@@ -31,6 +31,8 @@ bool any_starts_with(const std::vector<std::string> &s, const std::string &prefi
 	return false;
 }
 
+// 234 too low
+// 1238 just right, dummy on the min and max calcs
 long part1(const data_collection_t data) {
 	long solution = 0;
 
@@ -55,81 +57,48 @@ long part1(const data_collection_t data) {
 	// 	std::cout << std::endl;
 	// }
 
-	for (auto n1 : nodes) {
-		std::set<std::string> n1_edges{n1.second};
-		n1_edges.insert(n1.first);
+	std::unordered_set<std::string> triples;
+	for (auto n1 : t_nodes) {
+		auto n1_edges = nodes[n1];
 
-		for (auto n2 : nodes) {
-			if (n1 != n2) {
-				std::set<std::string> n2_edges{n2.second};
-				n2_edges.insert(n2.first);
+		// all n2 are in n1
+		for (auto n2 : n1_edges) {
+			auto n2_edges = nodes[n2];
 
-				std::vector<std::string> n1n2_edges;
-			    std::set_intersection(n1_edges.begin(), n1_edges.end(),
-									  n2_edges.begin(), n2_edges.end(),
-            			              std::back_inserter(n1n2_edges));
+			// all n3 are in n2
+			for (auto n3 : n2_edges) {
+				auto n3_edges = nodes[n3];
+				if (n3_edges.find(n1) != n3_edges.end()) {
 
-				for (auto n3_name : n1n2_edges) {
-					if (n3_name != n1.first && n3_name != n2.first) {
-						auto n3{nodes[n3_name]};
+					// this is a 3-connected set, add it to our list of triples
 
-						std::set<std::string> n3_edges{n3};
-						n3_edges.insert(n3_name);
+					// insert them in a sorted order so set will filter for us.
+					// std::cout << n1 << "," << n2 << "," << n3 << std::endl;
+					auto max = std::max(n1, std::max(n2, n3));
+					auto min = std::min(n1, std::min(n2, n3));
 
-						std::vector<std::string> n1n2n3_edges;
-						std::set_intersection(n1n2_edges.begin(), n1n2_edges.end(),
-											n3_edges.begin(), n3_edges.end(),
-												std::back_inserter(n1n2n3_edges));
-
-						if (n1n2n3_edges.size() > 3) {
-							std::cout << n1.first << ":(";
-							p_set(n1_edges);
-							
-							std::cout << ")\t" << n2.first << ":(";
-							p_set(n2_edges);
-
-							std::cout << ")\t" << n3_name << ":(";
-							p_set(n3_edges);
-
-
-							std::cout << ")\t(";
-							for (auto n : n1n2n3_edges) {
-								std::cout << n << ",";
-							}
-
-							std::cout << ")\t";
-
-							// if (any_starts_with(n1n2n3_edges, "t")) {
-							// 	std::cout << " *** ***";
-							// 	solution++;
-							// }
-
-							std::cout << std::endl;
-						}
+					std::string clique;
+					if (n1 != max && n1 != min) {
+						clique.append(min+n1+max);
+						// std::cout << "\t" << min << "," << n1 << "," << max << std::endl;
+					} else if (n2 != min && n2 != max) {
+						clique.append(min+n2+max);
+						// std::cout << "\t" <<  min << "," << n2 << "," << max << std::endl;
+					} else {
+						clique.append(min+n3+max);
+						// std::cout << "\t" <<  min << "," << n3 << "," << max << std::endl;
 					}
+
+					triples.insert(clique);
 				}
 			}
 		}
-
 	}
 
-	// solution /= 3;
-
-	// std::unordered_set<std::string> seen;
-	// for (auto node : nodes) {
-	// 	if (seen.find(node.first) == seen.end()) {
-	// 		auto edges = node.second;
-	// 		std::cout << "evaluate " << node.first << "->" << edges.size() << std::endl;
-	// 		// if (edges.size() == 2) {
-	// 			std::cout << "\ttriple:" << node.first << ",";
-	// 			for (auto n : node.second) {
-	// 				std::cout << n << ",";
-	// 			}
-	// 			std::cout << std::endl;
-	// 		// }
-	// 	}
-	// }
-
+	for (auto t : triples) {
+		// std::cout << t << std::endl;
+		solution++;
+	}
 
 	return solution;
 }
