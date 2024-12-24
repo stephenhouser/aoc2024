@@ -75,22 +75,27 @@ size_t z_value(std::map<std::string, int> &wires) {
 
 	size_t result = 0;
 	for (auto &wire : output_wires) {
-		// assert(wires[wire] >= 0);
-		result = result << 1;
+		assert(wires[wire] >= 0);
+		result = (result << 1) + (size_t)(wires[wire] & 0x01);
+	}
 
+	return result;
+}
+
+
+void print_z(std::map<std::string, int> &wires) {
+	std::vector<std::string> output_wires = find_output_wires(wires);
+
+	for (auto &wire : output_wires) {
 		if (wires[wire] >= 0) {
-			result += (size_t)(wires[wire] & 0x01);
 			std::cout << (wires[wire] & 0x01);
 		} else {
 			std::cout << ".";
 		}
 
 	}
-
-	std::cout << std::endl;
-
-	return result;
 }
+
 
 int node_value(const node_t &node, std::map<std::string, int> &wires) {
 	if (wires[node.a] < 0 || wires[node.b] < 0) {
@@ -115,7 +120,6 @@ int node_value(const node_t &node, std::map<std::string, int> &wires) {
 long part1([[maybe_unused]] const data_collection_t data) {
 	long solution = 1;
 
-	// std::map<std::string, int>, std::vector<node_t>>
 	auto [wires, nodes] = data;
 
 	// for (auto wire : wires) {
@@ -130,16 +134,18 @@ long part1([[maybe_unused]] const data_collection_t data) {
 
 	int i = 0;
 	while (!output_ready(wires)) {
-		std::cout << i++ << ": ";
+		std::cout << std::setw(2) << i++ << ": ";
 
 		for (auto &node : nodes) {
 			wires[node.out] = node_value(node, wires);
 		}
 
-		z_value(wires);
+		print_z(wires);
+		std::cout << std::endl;
 	}
 
 	std::cout << std::endl;
+
 	solution = (long)z_value(wires);
 	return solution;
 }
