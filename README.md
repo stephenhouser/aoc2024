@@ -106,8 +106,15 @@ Contains my solutions to the [Advent of Code 2024](https://adventofcode.com/2024
 
     Pattern matching; this was a reading comprehension test. first part was straightforward math and manipulations; second part was an exhaustive search of the patterns in previous results. Matching for best pattern/sale price of banannas.
 
-- [Day 23: ](https://adventofcode.com/2024/day23) -- [solution](./day23)
-- [Day 24: ](https://adventofcode.com/2024/day24) -- [solution](./day24)
+- [Day 23: LAN Party](https://adventofcode.com/2024/day23) -- [solution](./day23)
+
+    Graph, Cliques; first part was to find triples that contained a node starting with "t". Second part was to find the largest clique (an NP-Hard problem) Used Bron Kerbosch from Wikipedia.
+
+- [Day 24: Crossed Wires](https://adventofcode.com/2024/day24) -- [solution](./day24)
+
+    Logic simulation and graph viewing. Today was a tough one. First part reading graph, building simulated circuit and simulating it to get result. Second, adder circuit is broken need to find wires to swap. Considered just trying evey pair randomly and hoping. Reverted to setting one bit on y (in x+y=z) to triangulate where broken parts might be. Was fruitful, found which bit failed, looked at graph in that area and manually found wires to patch. Rinse, repeat. No code for the "solve".
+
+- [Day 25: ](https://adventofcode.com/2024/day25) -- [solution](./day25)
 
 
 ## NOTES
