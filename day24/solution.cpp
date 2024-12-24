@@ -5,7 +5,7 @@
 #include <regex>		// std::regex regular expressions
 #include <numeric>		// std::accumulate
 #include <cassert>
-
+#include <bitset>
 
 #include "aoc2024.h"
 #include "solution.h"
@@ -27,6 +27,7 @@
 // 	std::string out;
 // };
 
+
 void print_node(const node_t &node) {
 	std::cout << node.a;
 	switch (node.op) {
@@ -46,21 +47,20 @@ void print_node(const node_t &node) {
 	std::cout << node.b << " => " << node.out;
 }
 
-std::vector<std::string> find_output_wires(const std::map<std::string, int> &wires) {
+std::vector<std::string> find_wires(const network_t &wires, const std::string &prefix) {
 	std::vector<std::string> output_wires;
 
 	for (const auto &wire_pair : wires) {
-		if (wire_pair.first.find("z", 0) == 0) {
+		if (wire_pair.first.find(prefix, 0) == 0) {
 			output_wires.push_back(wire_pair.first);
 		}
 	}
 
-	std::sort(output_wires.begin(), output_wires.end(), std::greater<std::string>());
 	return output_wires;
 }
 
-bool output_ready(std::map<std::string, int> &wires) {
-	std::vector<std::string> output_wires = find_output_wires(wires);
+bool bus_ready(network_t &wires, const std::string &prefix = "z") {
+	std::vector<std::string> output_wires = find_wires(wires, prefix);
 	for (auto &wire : output_wires) {
 		if (wires[wire] < 0) {
 			return false;
@@ -70,8 +70,9 @@ bool output_ready(std::map<std::string, int> &wires) {
 	return true;
 }
 
-size_t z_value(std::map<std::string, int> &wires) {
-	std::vector<std::string> output_wires = find_output_wires(wires);
+size_t bus_value(network_t &wires, const std::string &prefix = "z") {
+	std::vector<std::string> output_wires = find_wires(wires, prefix);
+	std::sort(output_wires.begin(), output_wires.end(), std::greater<std::string>());
 
 	size_t result = 0;
 	for (auto &wire : output_wires) {
@@ -82,9 +83,19 @@ size_t z_value(std::map<std::string, int> &wires) {
 	return result;
 }
 
+void set_bus(network_t &wires, const std::string &prefix, size_t value) {
+	std::vector<std::string> output_wires = find_wires(wires, prefix);
+	std::sort(output_wires.begin(), output_wires.end(), std::less<std::string>());
 
-void print_z(std::map<std::string, int> &wires) {
-	std::vector<std::string> output_wires = find_output_wires(wires);
+	for (auto &wire : output_wires) {
+		wires[wire] = value & 0x01;
+		value = value >> 1;
+	}
+}
+
+void bus_print(network_t &wires, const std::string &prefix = "z") {
+	std::vector<std::string> output_wires = find_wires(wires, prefix);
+	std::sort(output_wires.begin(), output_wires.end(), std::greater<std::string>());
 
 	for (auto &wire : output_wires) {
 		if (wires[wire] >= 0) {
@@ -92,12 +103,10 @@ void print_z(std::map<std::string, int> &wires) {
 		} else {
 			std::cout << ".";
 		}
-
 	}
 }
 
-
-int node_value(const node_t &node, std::map<std::string, int> &wires) {
+int node_eval(const node_t &node, network_t &wires) {
 	if (wires[node.a] < 0 || wires[node.b] < 0) {
 		return -1;
 	}
@@ -115,10 +124,66 @@ int node_value(const node_t &node, std::map<std::string, int> &wires) {
 }
 
 
+size_t simulate_bit_vec(network_t wires, std::vector<node_t> nodes) {
+	std::bitset<64> z_ready;
+	std::vector<std::string> z_wires = find_wires(wires, "z");
+	for (size_t i = 0; i < z_wires.size(); i++) {
+		z_ready.set(i);
+	}
+
+	while (z_ready != 0) {
+		for (auto &node : nodes) {
+			auto value = node_eval(node, wires);
+			wires[node.out] = value;
+
+			if (node.out.find("z", 0) == 0 && value >= 0) {
+				int z_bit = atoi(node.out.substr(1).c_str());
+				if (value < 0) {
+					z_ready.set((size_t)z_bit, true);
+				} else {
+					z_ready.set((size_t)z_bit, false);
+				}
+			}
+		}
+	}
+
+	return bus_value(wires);
+}
+
+size_t simulate_1(network_t wires, std::vector<node_t> nodes) {
+	while (!bus_ready(wires)) {
+
+		for (auto &node : nodes) {
+			auto value = node_eval(node, wires);
+			wires[node.out] = value;
+		}
+	}
+
+	return bus_value(wires);
+}
+
+size_t simulate(network_t wires, std::vector<node_t> nodes) {
+	// int i = 0;
+	while (!bus_ready(wires, "z")) {
+		// std::cout << std::setw(2) << i++ << ": ";
+
+		for (auto &node : nodes) {
+			wires[node.out] = node_eval(node, wires);
+		}
+
+		// bus_print(wires, "z");
+		// std::cout << std::endl;
+	}
+
+	return bus_value(wires, "z");
+}
+
+
+
 // 0 not the right answer
 // 59336987801432 correct answer, nodes affect wires immediately
-long part1([[maybe_unused]] const data_collection_t data) {
-	long solution = 1;
+long part1(const data_collection_t data) {
+	long solution = 0;
 
 	auto [wires, nodes] = data;
 
@@ -131,29 +196,41 @@ long part1([[maybe_unused]] const data_collection_t data) {
 	// 	print_node(node);
 	// 	std::cout << std::endl;
 	// }
+	// 2.2ms
 
-	int i = 0;
-	while (!output_ready(wires)) {
-		std::cout << std::setw(2) << i++ << ": ";
-
-		for (auto &node : nodes) {
-			wires[node.out] = node_value(node, wires);
-		}
-
-		print_z(wires);
-		std::cout << std::endl;
-	}
-
-	std::cout << std::endl;
-
-	solution = (long)z_value(wires);
+	solution = (long)simulate_1(wires, nodes);
 	return solution;
 }
 
-long part2([[maybe_unused]] const data_collection_t data) {
-	long solution = 2;
 
-	// TODO: part 2 code here
+long part2(const data_collection_t data) {
+	long solution = 0;
+
+	auto [wires, nodes] = data;
+
+	for (size_t x = 0; x < 10; x++) {
+		for (size_t y = 0; y < 48; y++) {
+			size_t fy = 1 << y;
+
+			set_bus(wires, "x", x);
+			set_bus(wires, "y", fy);
+			auto z = simulate(wires, nodes);
+
+			// bus_print(wires, "x");
+			// std::cout << " + ";
+			// bus_print(wires, "y");
+			// std::cout << " = ";
+			// bus_print(wires, "z");
+
+			std::cout << x << " + " << fy << " = " << z;
+
+			if (x + fy != z) {
+				std::cout << " FAIL" << std::endl;
+			} else {
+				std::cout << " OK" << std::endl;
+			}
+		}
+	}
 
 	return solution;
 }
@@ -162,9 +239,9 @@ bool contains(const std::map<std::string, int> &haystack, const std::string &nee
 	return haystack.find(needle) != haystack.end();
 }
 
-void add_wire(std::map<std::string, int> wires, const std::string &name, int value) {
-	wires[name] = value;
-}
+// void add_wire(std::map<std::string, int> wires, const std::string &name, int value) {
+// 	wires[name] = value;
+// }
 
 /* Read data from path and return a vector for each line in the file. */
 const data_collection_t read_data(const std::string &path) {
