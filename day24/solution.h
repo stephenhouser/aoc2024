@@ -19,8 +19,8 @@ struct node_t {
 	std::string out;
 };
 
-
-using data_collection_t = std::tuple<std::map<std::string, int>, std::vector<node_t>>;
+using network_t = std::map<std::string, int>;
+using data_collection_t = std::tuple<network_t, std::vector<node_t>>;
 
 extern long part1(data_collection_t data);
 extern long part2(data_collection_t data);
