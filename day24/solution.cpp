@@ -150,6 +150,7 @@ size_t simulate_bit_vec(network_t wires, std::vector<node_t> nodes) {
 	return bus_value(wires);
 }
 
+/* simulate the circuit */
 size_t simulate_1(network_t wires, std::vector<node_t> nodes) {
 	while (!bus_ready(wires)) {
 
@@ -162,23 +163,84 @@ size_t simulate_1(network_t wires, std::vector<node_t> nodes) {
 	return bus_value(wires);
 }
 
+/* simulate the circuit */
 size_t simulate(network_t wires, std::vector<node_t> nodes) {
-	// int i = 0;
 	while (!bus_ready(wires, "z")) {
-		// std::cout << std::setw(2) << i++ << ": ";
-
 		for (auto &node : nodes) {
 			wires[node.out] = node_eval(node, wires);
 		}
-
-		// bus_print(wires, "z");
-		// std::cout << std::endl;
 	}
 
 	return bus_value(wires, "z");
 }
 
+/* find the node with wire as an output */
+int find_output(std::vector<node_t> &nodes, std::string wire) {
+	for (size_t n = 0; n < nodes.size(); n++) {
+		if (nodes[n].out == wire) {
+			return (int)n;
+		}
+	}
 
+	return -1;
+}
+
+/* generate a unique name for a node based on it's index, used for make_dot() */
+std::string node_name(std::vector<node_t> &nodes, int node_n) {
+	std::string op;
+	switch (nodes[(size_t)node_n].op) {
+		case AND:
+			op = "AND_";
+			break;
+		case XOR:
+			op = "XOR_";
+			break;
+		case OR:
+			op = "OR_";
+			break;
+	}
+
+	return op + std::to_string(node_n);
+}
+
+/* Makes a .dot file format of the nodes and edges for examination
+ * ./solution > file.dot
+ * // edit file.dot to remove any extra characters
+ * dot -Tpdf file.dot > file.pdf
+*/
+void make_dot([[maybe_unused]]network_t wires, std::vector<node_t> nodes) {
+	std::cout << "digraph network {" << std::endl;
+
+		// out -> in
+		for (size_t n = 0; n < nodes.size(); n++) {
+			auto node = nodes[n];
+			
+			int in_a = find_output(nodes, node.a);
+			if (in_a >= 0) {
+				std::cout << node_name(nodes, in_a) << " -> " << node_name(nodes, (int)n) 
+						  << " [label=\"" << node.a << "\"]" << std::endl;
+			} else {
+				std::cout << node.a << " -> " << node_name(nodes, (int)n)
+						  << " [label=\"" << node.a << "\"]" << std::endl;
+			}
+
+			int in_b = find_output(nodes, node.b);
+			if (in_b >= 0) {
+				std::cout << node_name(nodes, in_b) << " -> " << node_name(nodes, (int)n)
+						  << " [label=\"" << node.b << "\"]" << std::endl;
+			} else {
+				std::cout << node.b << " -> " << node_name(nodes, (int)n)
+						  << " [label=\"" << node.b << "\"]" << std::endl;
+			}
+
+			if (node.out.find("z", 0) == 0) {
+				std::cout << node_name(nodes, (int)n) << " -> " << node.out
+						  << " [label=\"" << node.out << "\"]" << std::endl;
+			}
+		}
+
+	std::cout << "}" << std::endl;
+}
 
 // 0 not the right answer
 // 59336987801432 correct answer, nodes affect wires immediately
@@ -198,50 +260,73 @@ long part1(const data_collection_t data) {
 	// }
 	// 2.2ms
 
-	solution = (long)simulate_1(wires, nodes);
+	solution = (long)simulate(wires, nodes);
 	return solution;
 }
 
+void swap_wires(std::vector<node_t> &nodes, std::string w1, std::string w2) {
+	for (auto &node : nodes) {
+		if (node.out == w1) {
+			// std::cout << "// swap out " << node.out << " => " << w2 << std::endl;
+			node.out = w2;
+		} else if (node.out == w2) {
+			// std::cout << "// swap out " << node.out << " => " << w1 << std::endl;
+			node.out = w1;
+		}
+	}
+}
 
+/* *** by looking at a lot of diagrams!
+ * Simulate and find where the first bit failure occurs,
+ * look at .dot file (converted to PDF) generated with make_dot()
+ * Piece togethere what wires are crossed by comparing to previous
+ * adder circuits, come up with guess as to wires to change.
+ * add swap_wires() call to swap wires in the graph.
+ * loop for 4 times.
+*/
 long part2(const data_collection_t data) {
-	long solution = 0;
-
 	auto [wires, nodes] = data;
 
-	for (size_t x = 0; x < 10; x++) {
-		for (size_t y = 0; y < 48; y++) {
-			size_t fy = 1 << y;
+	// don't ron on sample data.
+	if (wires.size() < 100) {
+		std::cout << "Don't run on sample data." << std::endl;
+		return 0;
+	}
 
-			set_bus(wires, "x", x);
-			set_bus(wires, "y", fy);
-			auto z = simulate(wires, nodes);
+	// sorted: ctg,dmh,dvq,rpb,rpv,z11,z31,z38
+	swap_wires(nodes, "z11", "rpv");	// bit 11
+	swap_wires(nodes, "ctg", "rpb");	// bit 15
+	swap_wires(nodes, "z31", "dmh");	// bit 31
+	swap_wires(nodes, "z38", "dvq");	// bit 38
+	// make_dot(wires, nodes);
 
-			// bus_print(wires, "x");
-			// std::cout << " + ";
-			// bus_print(wires, "y");
-			// std::cout << " = ";
-			// bus_print(wires, "z");
+	auto z_wires = find_wires(wires, "z");
+	size_t max_bit = z_wires.size() - 1;
 
-			std::cout << x << " + " << fy << " = " << z;
+	size_t x = 10;	// a random value
+	for (size_t y = 0; y < max_bit; y++) {
+		size_t fy = 1ul << y;
 
-			if (x + fy != z) {
-				std::cout << " FAIL" << std::endl;
-			} else {
-				std::cout << " OK" << std::endl;
-			}
+		set_bus(wires, "x", x);
+		set_bus(wires, "y", fy);
+		auto z = simulate(wires, nodes);
+
+		if (x + fy != z) {
+			std::cout << " FAIL at bit " << y << ", "
+					  << x << " + " << fy << " should be " << x + fy
+					  << std::endl;
+			std::cout << "x:" << std::bitset<64>(x) << " " << x << "\n"
+					  << "y:"<< std::bitset<64>(fy) << " " << fy << "\n"
+					  << "z:"<< std::bitset<64>(z) << " " << z << std::endl;
 		}
 	}
 
-	return solution;
+	return (long)string_hash("ctg,dmh,dvq,rpb,rpv,z11,z31,z38");
 }
 
 bool contains(const std::map<std::string, int> &haystack, const std::string &needle) {
 	return haystack.find(needle) != haystack.end();
 }
-
-// void add_wire(std::map<std::string, int> wires, const std::string &name, int value) {
-// 	wires[name] = value;
-// }
 
 /* Read data from path and return a vector for each line in the file. */
 const data_collection_t read_data(const std::string &path) {
