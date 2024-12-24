@@ -299,6 +299,7 @@ long part2(const data_collection_t data) {
 	swap_wires(nodes, "z31", "dmh");	// bit 31
 	swap_wires(nodes, "z38", "dvq");	// bit 38
 	// make_dot(wires, nodes);
+	// return 0;
 
 	auto z_wires = find_wires(wires, "z");
 	size_t max_bit = z_wires.size() - 1;
