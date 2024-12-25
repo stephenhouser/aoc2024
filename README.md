@@ -114,7 +114,7 @@ Contains my solutions to the [Advent of Code 2024](https://adventofcode.com/2024
 
     Logic simulation and graph viewing. Today was a tough one. First part reading graph, building simulated circuit and simulating it to get result. Second, adder circuit is broken need to find wires to swap. Considered just trying evey pair randomly and hoping. Reverted to setting one bit on y (in x+y=z) to triangulate where broken parts might be. Was fruitful, found which bit failed, looked at graph in that area and manually found wires to patch. Rinse, repeat. No code for the "solve".
 
-- [Day 25: ](https://adventofcode.com/2024/day25) -- [solution](./day25)
+- [Day 25: Code Chronicle](https://adventofcode.com/2024/day25) -- [solution](./day25)
 
 
 ## NOTES
