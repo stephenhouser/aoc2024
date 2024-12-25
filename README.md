@@ -116,6 +116,22 @@ Contains my solutions to the [Advent of Code 2024](https://adventofcode.com/2024
 
 - [Day 25: Code Chronicle](https://adventofcode.com/2024/day25) -- [solution](./day25)
 
+    Brute force. Straightforward, read maps of keys and locks, check if they fit together.
+
+## For Next Year
+
+- Develop `charmap`, `point`, `vector`, and new `graph` classes to fit together.
+- Add transpose to charmap (could have used on last day)
+- Add ant/traveler to charmap and graph to 'walk the path'
+- Flesh out `cache` or memoize classes
+- Make charmap convert to graph and graph to charmap
+- graph class with edges to nodes and nodes to edges to represent either way and flip between them.
+- graph and charmap to .dot file for viewing.
+- output functions, points, vectors, graphs to iostream
+- add some graph algos to it (dijkstra, a*, bron Kerbosh and others)
+- parsing routines; split input on `\n\n`, split ints, split tokens, common graph layouts (`a OR n -> x`, `a : b`, etc.)
+- Get debugger working remotely in vscode
+- switch to c++20 with ranges and functional programming
 
 ## NOTES
 
