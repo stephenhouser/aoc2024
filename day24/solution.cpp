@@ -27,6 +27,20 @@
 // 	std::string out;
 // };
 
+// adapted from https://cp-algorithms.com/string/string-hashing.html
+size_t string_hash(const std::string &s) {
+	const size_t p = 31;
+	const size_t m = 1e9 + 9;
+	size_t hash_value = 0;
+	size_t p_pow = 1;
+
+	for (size_t i = 0; i < s.length(); i++) {
+		hash_value = (hash_value + ((size_t)s[i] - (size_t)'a' + (size_t)1) * p_pow) % m;
+		p_pow = (p_pow * p) % m;
+	}
+
+	return hash_value;
+}
 
 void print_node(const node_t &node) {
 	std::cout << node.a;

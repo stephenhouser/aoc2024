@@ -33,7 +33,7 @@ LFLAGS =
 
 # C++ specific flags
 CXX = g++
-CXXFLAGS = -std=c++17 -O3
+CXXFLAGS = -std=c++17 -O3  -msse3
 LXXFLAGS =
 
 .PHONY: default all clean distclean
@@ -69,9 +69,9 @@ lint: $(SOURCES)
 
 test: $(TARGET)
 	@-/bin/echo -n "$(DAY) "
-	@-./$(TARGET) -v -s 3 -g 2 test.txt || true
+	@-./$(TARGET) -v -s 3 -g -1 test.txt || true
 	@-/bin/echo -n "$(DAY) "
-	@-./$(TARGET) -v -s 1 -g 2 input.txt || true
+	@-./$(TARGET) -v -s 3287 -g -1 input.txt || true
 
 clean:
 	-rm -f *.o

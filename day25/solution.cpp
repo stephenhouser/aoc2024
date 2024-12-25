@@ -83,13 +83,13 @@ long part1([[maybe_unused]]const data_collection_t data) {
 
 	auto [locks, keys] = parse(data);
 
-	for (auto p : locks) {
-		std::cout << "lock: " << p << std::endl;
-	}
+	// for (auto p : locks) {
+	// 	std::cout << "lock: " << p << std::endl;
+	// }
 
-	for (auto p : keys) {
-		std::cout << " key: " << p << std::endl;
-	}
+	// for (auto p : keys) {
+	// 	std::cout << " key: " << p << std::endl;
+	// }
 
 	for (auto &lock : locks) {
 		for (auto &key : keys) {
